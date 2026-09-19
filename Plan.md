@@ -42,7 +42,7 @@ Status values: `TODO`, `IN_PROGRESS`, `BLOCKED`, `DONE`. All tasks start `TODO`.
 
 | Task ID | Description | Files | Dependencies | Acceptance Criteria | Test | Status |
 |---------|-------------|-------|---------------|----------------------|------|--------|
-| P1-1 | C++ header export (`.h` byte array) for the quantized model | `src/models/export_header.py` | P0-8 | Valid C-style `unsigned char[]` array file generated matching `.tflite` bytes | `tests/test_export_header.py` | TODO |
+| P1-1 | C++ header export (`.h` byte array) for the quantized model | `src/models/export_header.py` | P0-8 | Valid C-style `unsigned char[]` array file generated matching `.tflite` bytes | `tests/test_export_header.py` | DONE |
 | P1-2 | CLI to replay a full MIT-BIH record end-to-end with live console output | `src/cli/run_demo.py` | P0-13 | Runs a record from the command line, prints per-window state and any triggered alerts | Manual + smoke test `tests/test_cli_smoke.py` | TODO |
 | P1-3 | Metrics visualization: SRAM/Flash/latency bar charts, ROC/PR curve for classifier | `src/reports/plots.py` | P0-14 | Generates PNG/HTML plots from real report data, no fabricated data points | `tests/test_plots.py`: files generated | TODO |
 | P1-4 | Encryption module hardening: symmetric cipher selection + key management via config/env | `src/telemetry/crypto.py` | P0-12 | Keys loaded from env/config, never hardcoded or logged | `tests/test_crypto.py` | TODO |

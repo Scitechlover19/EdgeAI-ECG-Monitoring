@@ -115,9 +115,16 @@ The core 5-stage pipeline slice is operational and validated with 37 unit and in
 | P0-14 | Resource Profiling Report | **DONE** | Profiling generator built & `reports/resource_report.md` exported; `pytest tests/test_profile_report.py` passed |
 | P0-15 | Bandwidth Reduction Measurement | **DONE** | Bandwidth measurement module built & `reports/bandwidth_report.md` exported; `pytest tests/test_bandwidth_report.py` passed |
 | P0-16 | `DEMO MODE` Synthetic Harness | **DONE** | Synthetic demo module built (`src/pipeline/demo_mode.py`), `REVIEW2_DEMO.md` exported & `pytest tests/test_demo_mode.py` passed |
+| P1-1 | C++ Header Model Export | **DONE** | `src/models/export_header.py` built, `models/student_model_int8.h` (11,224 bytes) exported & `pytest tests/test_export_header.py` passed |
 
 ---
 
 ## 6. Recommended Next Implementation Steps
 
-All Review-2 **P0 Must-Have Tasks** (P0-1 through P0-16) are **100% COMPLETE and VERIFIED**. Optional P1/P2 polish tasks remain available.
+All Review-2 **P0 Must-Have Tasks** (P0-1 through P0-16) and **P1-1** are **100% COMPLETE and VERIFIED** (79/79 tests passing).
+Next in queue:
+- **P1-2**: MIT-BIH record replay CLI (`src/cli/run_demo.py` & `tests/test_cli_smoke.py`).
+- **P1-3**: Metrics visualization plots (`src/reports/plots.py` & `tests/test_plots.py`).
+- **P1-4**: Telemetry crypto hardening & key management (`src/telemetry/crypto.py` & `tests/test_crypto.py`).
+- **P1-5**: Edge-case testing for DSPFilter and StateScheduler (`tests/test_dsp_filter.py`, `tests/test_state_scheduler.py`).
+- **P1-6**: Automated reproducibility manifest generation (`reports/experiment_manifest.json`, `tests/test_manifest.py`).
