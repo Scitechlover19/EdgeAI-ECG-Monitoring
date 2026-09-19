@@ -18,6 +18,22 @@ from src.pipeline.config import load_config, setup_logging
 logger = setup_logging()
 
 
+def load_teacher_checkpoint(path: Path, seed: int = 42) -> tf.keras.Model:
+    """Load Teacher model checkpoint handling Keras 3 cross-version deserialization."""
+    try:
+        return tf.keras.models.load_model(path, compile=False)
+    except Exception:
+        import tempfile
+        import zipfile
+        teacher = build_teacher_model(input_shape=(200, 1), num_classes=2, seed=seed)
+        with zipfile.ZipFile(path, "r") as z:
+            with tempfile.NamedTemporaryFile(suffix=".weights.h5", delete=False) as tmp:
+                tmp.write(z.read("model.weights.h5"))
+                tmp_path = tmp.name
+        teacher.load_weights(tmp_path)
+        return teacher
+
+
 def train_student_kd_pipeline(
     epochs: int = 15,
     batch_size: int = 256,
@@ -70,7 +86,7 @@ def train_student_kd_pipeline(
     t_path = teacher_path if teacher_path is not None else models_dir / "teacher_model.keras"
     if t_path.exists():
         logger.info(f"Loading pre-trained Teacher checkpoint from {t_path}...")
-        teacher = tf.keras.models.load_model(t_path, compile=False)
+        teacher = load_teacher_checkpoint(t_path, seed=seed)
     else:
         logger.info(f"Teacher checkpoint not found at {t_path}, constructing fresh Teacher...")
         teacher = build_teacher_model(input_shape=(200, 1), num_classes=2, seed=seed)
