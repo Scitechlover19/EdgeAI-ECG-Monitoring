@@ -100,12 +100,12 @@ Evaluated over the full held-out test split (51,992 windows):
 | Metric | Measured Value | Status |
 |---|---:|---|
 | **Total Test Windows Processed** | **51,992** | `[MEASURED]` |
-| **Normal Windows (`SLEEP` state)** | **9,216** | `[MEASURED]` |
-| **Anomaly Transmissions (`ACTIVE` state)** | **42,776** | `[MEASURED]` |
-| **Raw Continuous Baseline Bytes** | **20,796,800 B** (20.80 MB) | `[MEASURED/ASSUMED]` |
-| **Anomaly Mode Telemetry Bytes** | **5,474,986 B** (5.47 MB) | `[MEASURED]` |
-| **Network Payload Bytes Saved** | **15,321,814 B** (15.32 MB) | `[MEASURED]` |
-| **Measured Network Payload Reduction** | **73.6739%** | `[MEASURED]` |
+| **Normal Windows (`SLEEP` state)** | **51,855** | `[MEASURED]` |
+| **Anomaly Transmissions (`ACTIVE` state)** | **137** | `[MEASURED]` |
+| **Raw Continuous Baseline Bytes** | **20,796,800 B** (19.83 MB) | `[MEASURED/ASSUMED]` |
+| **Anomaly Mode Telemetry Bytes** | **18,115 B** (0.02 MB) | `[MEASURED]` |
+| **Network Payload Bytes Saved** | **20,778,685 B** (19.82 MB) | `[MEASURED]` |
+| **Measured Network Payload Reduction** | **99.9129%** | `[MEASURED]` |
 | **Raw Waveform Bytes Transmitted** | **0 B** | `[VERIFIED]` |
 
 Report artifact: [`reports/bandwidth_report.md`](file:///d:/Project/EdgeAI-ECG-Monitoring/reports/bandwidth_report.md).
@@ -131,8 +131,8 @@ python -m src.pipeline.demo_mode
 
 2. **MIT-BIH Natural Exemplar Search (`[DEMO MODE — MIT-BIH EXEMPLAR]`):**
    - Searches local held-out test windows for natural confidences $\ge 0.85$.
-   - **Factual Audit Finding:** Max measured test confidence under INT8 model is `0.7217` ($< 0.85$).
-   - **Scientific Integrity Assertion:** Per project rules, zero artificial overrides, threshold alterations, or fabricated scores were applied. The ACTIVE telemetry transmission pathway is verified via dedicated unit tests (`tests/test_secure_telemetry.py` & `tests/test_state_scheduler.py`).
+   - **Factual Audit Finding:** Across the held-out test split, 137 windows naturally exceed threshold $0.85$ (max measured test confidence under INT8 model is `0.9766`).
+   - **Scientific Integrity Assertion:** Per project rules, zero artificial overrides, threshold alterations, or fabricated scores were applied. All reported numbers directly trace to measured outputs in `reports/bandwidth_report.md`.
 
 ---
 

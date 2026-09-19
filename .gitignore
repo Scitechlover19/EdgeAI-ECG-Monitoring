@@ -4,10 +4,12 @@ __pycache__/
 .pytest_cache/
 *.egg-info/
 
-# Virtual environments
+# Virtual environments & local caches
 .venv/
 venv/
 env/
+.pip_cache/
+.tmp/
 
 # IDE
 .vscode/

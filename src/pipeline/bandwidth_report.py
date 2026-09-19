@@ -253,7 +253,7 @@ Each triggered anomaly transmission produces a compact AES-GCM encrypted binary 
 - **Target Achieved:** **{"YES" if target_achieved else "NO (Measured value reported factually without forcing or changing thresholds)"}**
 
 > [!NOTE]
-> On the held-out MIT-BIH test split of 51,992 windows, the INT8 model detected 42,776 arrhythmia anomaly windows at threshold 0.85, resulting in an anomaly transmission rate of 82.27%. Because this test partition contains a high proportion of anomalous cardiac windows, total transmitted telemetry was 5.47 MB versus a 20.80 MB continuous streaming baseline, achieving an empirical **{metrics['payload_reduction_percent']:.2f}% network payload reduction**. Per AGENTS.md rules, this measured value is reported without modification or artificial threshold tuning.
+> On the held-out MIT-BIH test split of {metrics['total_test_windows']:,} windows, the INT8 model detected {metrics['anomaly_transmissions']:,} arrhythmia anomaly windows at threshold {metrics['threshold']}, resulting in an anomaly transmission rate of {metrics['anomaly_rate_percent']:.2f}%. Total transmitted telemetry was {metrics['anomaly_mode_bytes']:,} bytes ({metrics['anomaly_mode_bytes'] / (1024*1024):.4f} MB) versus a {metrics['baseline_bytes']:,} bytes ({metrics['baseline_bytes'] / (1024*1024):.2f} MB) continuous streaming baseline, achieving an empirical **{metrics['payload_reduction_percent']:.4f}% network payload reduction** ({metrics['bytes_saved'] / (1024*1024):.2f} MB saved). Per AGENTS.md rules, this measured value is reported without modification or artificial threshold tuning.
 
 ---
 

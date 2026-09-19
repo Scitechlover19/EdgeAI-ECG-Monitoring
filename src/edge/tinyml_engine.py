@@ -136,8 +136,16 @@ class TinyMLEngine:
                     if scale > 0:
                         output_data = (output_data.astype(np.float32) - zero_point) * scale
 
-                # Softmax or probability vector
-                probs = tf.nn.softmax(output_data[0]).numpy()
+                # Use direct probabilities if output layer is already softmax, else apply softmax
+                out_vec = output_data[0]
+                if np.all(out_vec >= -1e-3) and np.isclose(np.sum(out_vec), 1.0, atol=0.05):
+                    probs = np.clip(out_vec, 0.0, 1.0)
+                    s = float(np.sum(probs))
+                    if s > 0:
+                        probs = probs / s
+                else:
+                    probs = tf.nn.softmax(out_vec).numpy()
+
                 anomaly_confidence = float(probs[1]) if len(probs) > 1 else float(probs[0])
                 predicted_label = int(np.argmax(probs)) if len(probs) > 1 else (1 if anomaly_confidence >= 0.5 else 0)
                 return anomaly_confidence, predicted_label

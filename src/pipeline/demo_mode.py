@@ -208,12 +208,12 @@ def run_demo_pipeline(
 
     if natural_exemplars:
         logger.info(
-            f"[DEMO MODE - MIT-BIH EXEMPLAR] Found {len(natural_exemplars)} windows naturally >= {scheduler.threshold}."
+            f"[DEMO MODE - MIT-BIH EXEMPLAR] Found {len(natural_exemplars)} windows naturally >= {scheduler.threshold}. "
+            f"First exemplar at index {natural_exemplars[0][0]} with confidence {natural_exemplars[0][1]:.4f}."
         )
     else:
         logger.info(
-            f"[DEMO MODE - MIT-BIH EXEMPLAR] No naturally occurring test window reached threshold {scheduler.threshold} "
-            f"(max measured test confidence under INT8 model is 0.7217). "
+            f"[DEMO MODE - MIT-BIH EXEMPLAR] No naturally occurring test window reached threshold {scheduler.threshold}. "
             f"Per scientific integrity rules, zero artificial overrides or threshold alterations were applied."
         )
 
@@ -315,7 +315,7 @@ def run_demo_pipeline(
 ## 2. Natural Exemplar Audit (`[DEMO MODE — MIT-BIH EXEMPLAR]`)
 
 - **Natural Exemplars $\ge 0.85$ Found:** **{len(natural_exemplars)}**
-- **Max Measured Test Confidence under INT8 Model:** **0.7217** ($< 0.85$)
+- **First Exemplar:** {f"Window #{natural_exemplars[0][0]} with confidence {natural_exemplars[0][1]:.4f}" if natural_exemplars else "None"}
 - **Scientific Integrity Note:** Per project rules, zero artificial overrides or threshold alterations were applied. The ACTIVE telemetry transmission pathway is verified via dedicated unit tests (`tests/test_secure_telemetry.py` & `tests/test_state_scheduler.py`).
 
 ---
@@ -353,7 +353,7 @@ def print_demo_cli_summary() -> None:
     print(f" Random Seed                   : {summary['seed']}")
     print(f" Normal Windows (SLEEP)        : {summary['normal_windows_sleep']}")
     print(f" Anomaly Alerts Sent (ACTIVE)  : {summary['anomaly_windows_triggered']}")
-    print(f" Natural Exemplars >= 0.85     : {summary['natural_exemplars_found']} (Max test conf: 0.7217)")
+    print(f" Natural Exemplars >= 0.85     : {summary['natural_exemplars_found']}")
     print(f" Telemetry Alerts Received     : {summary['telemetry_records_received']}")
     print(f" Total Telemetry Bytes Sent    : {summary['total_telemetry_bytes']} bytes")
     print(f" Mean Latency (DSP+Inference)  : {summary['mean_latency_ms']:.4f} ms")
