@@ -1,0 +1,1 @@
+"""EdgeAI ECG Monitoring package."""

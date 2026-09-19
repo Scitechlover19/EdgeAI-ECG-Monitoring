@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "edgeai-ecg-monitoring"
+version = "0.1.0"
+description = "Resource-Constrained Edge-AI Pipeline for Real-Time Privacy-Preserving Patient Monitoring"
+authors = [{ name = "Nancy Singh", email = "22MIS0027@vit.ac.in" }]
+readme = "PRD.md"
+requires-python = ">=3.10"
+dependencies = [
+    "numpy>=1.26.0",
+    "scipy>=1.13.0",
+    "pandas>=2.2.0",
+    "cryptography>=42.0.0",
+    "pyyaml>=6.0.0",
+    "wfdb>=4.1.0",
+    "tensorflow>=2.15.0",
+    "matplotlib>=3.8.0",
+    "scikit-learn>=1.4.0",
+    "pytest>=8.0.0"
+]
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+addopts = "-ra -q"
+testpaths = ["tests"]
+markers = [
+    "resource: marks tests for SRAM, Flash, and latency resource budgets",
+    "integration: marks integration tests running full edge pipeline"
+]
+
+[tool.black]
+line-length = 88
+target-version = ['py310']
+
+[tool.ruff]
+line-length = 88
+target-version = "py310"

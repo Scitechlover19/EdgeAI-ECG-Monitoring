@@ -1,0 +1,37 @@
+# EdgeAI ECG Monitoring Configuration File
+# Governed by PRD.md, Architecture.md, and DECISIONS.md
+
+ingestion:
+  window_size: 200
+  overlap_ratio: 0.5
+  default_sample_rate: 360.0
+
+dsp:
+  filter_order: 4
+  low_cutoff: 0.5
+  high_cutoff: 45.0
+
+scheduler:
+  threshold: 0.85
+  default_state: "SLEEP"
+  active_state: "ACTIVE"
+
+model:
+  temperature: 3.0
+  alpha: 0.7
+  random_seed: 42
+  num_classes: 2
+
+budgets:
+  sram_limit_kb: 256
+  flash_limit_mb: 1.0
+  latency_limit_ms: 50.0
+
+telemetry:
+  encryption_algorithm: "AES-GCM"
+  key_size_bits: 256
+
+paths:
+  data_dir: "data"
+  reports_dir: "reports"
+  models_dir: "models"

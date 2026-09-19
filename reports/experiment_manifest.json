@@ -1,0 +1,91 @@
+{
+  "timestamp": "2026-09-19 21:27:20",
+  "dataset_name": "MIT-BIH Arrhythmia Database (PhysioNet)",
+  "split_method": "Patient/Record-Independent Split (DECISIONS.md #3)",
+  "random_seed": 42,
+  "records": {
+    "total_records": 48,
+    "train_records": [
+      "100",
+      "101",
+      "103",
+      "104",
+      "105",
+      "106",
+      "108",
+      "109",
+      "112",
+      "113",
+      "114",
+      "116",
+      "117",
+      "118",
+      "121",
+      "123",
+      "201",
+      "202",
+      "203",
+      "205",
+      "208",
+      "209",
+      "210",
+      "212",
+      "213",
+      "214",
+      "219",
+      "221",
+      "222",
+      "230",
+      "231",
+      "232",
+      "233"
+    ],
+    "val_records": [
+      "102",
+      "111",
+      "124",
+      "200",
+      "215",
+      "217",
+      "223"
+    ],
+    "test_records": [
+      "107",
+      "115",
+      "119",
+      "122",
+      "207",
+      "220",
+      "228",
+      "234"
+    ]
+  },
+  "windows": {
+    "window_size": 200,
+    "overlap_ratio": 0.5,
+    "train_windows": 214467,
+    "val_windows": 45493,
+    "test_windows": 51992,
+    "total_windows": 311952
+  },
+  "class_distribution": {
+    "train": {
+      "normal_0": 195174,
+      "anomaly_1": 19293
+    },
+    "val": {
+      "normal_0": 34108,
+      "anomaly_1": 11385
+    },
+    "test": {
+      "normal_0": 44714,
+      "anomaly_1": 7278
+    }
+  },
+  "dsp_parameters": {
+    "low_cutoff_hz": 0.5,
+    "high_cutoff_hz": 45.0,
+    "filter_order": 4,
+    "sample_rate_hz": 360.0
+  }
+}
