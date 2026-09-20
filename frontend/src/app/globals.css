@@ -1,0 +1,71 @@
+@import "tailwindcss";
+
+:root {
+  --bg-base: #E7E0D2;
+  --surface: #EFE9DC;
+  --surface-recessed: #D8CDB8;
+  --ink: #241D14;
+  --signal: #1F3347;
+  --alert: #7A2E22;
+  --accent-secondary: #9C7A3C;
+}
+
+@theme {
+  --color-base: #E7E0D2;
+  --color-surface: #EFE9DC;
+  --color-recessed: #D8CDB8;
+  --color-ink: #241D14;
+  --color-signal: #1F3347;
+  --color-alert: #7A2E22;
+  --color-steel: #9C7A3C;
+  --font-sans: var(--font-sans-main), sans-serif;
+  --font-mono: var(--font-mono-main), monospace;
+}
+
+/* Lenis smooth scroll */
+html.lenis, html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+.lenis.lenis-smooth iframe {
+  pointer-events: none;
+}
+
+body {
+  background-color: var(--bg-base);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Monospace tabular numbers */
+.font-numeric {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Custom scrollbar matching palette */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-base);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--surface-recessed);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-secondary);
+}

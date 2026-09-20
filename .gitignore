@@ -1,31 +1,62 @@
 # Python
 __pycache__/
 *.py[cod]
+*$py.class
 .pytest_cache/
 *.egg-info/
+.coverage
+htmlcov/
+.tox/
+.nox/
 
-# Virtual environments & local caches
+# Virtual environments & package caches
 .venv/
 venv/
 env/
+ENV/
 .pip_cache/
 .tmp/
 
-# IDE
+# IDE & Editors
 .vscode/
 .idea/
+*.sublime-workspace
+*.sublime-project
+*.swp
+*.swo
+*~
 
-# OS
+# OS artifacts
 .DS_Store
 Thumbs.db
+ehthumbs.db
+[Dd]esktop.ini
 
-# MIT-BIH raw dataset / generated data
+# MIT-BIH raw dataset / generated binary partitions
 data/raw/
 data/processed/
+data/mitbih/
+*.tar.gz
+*.zip
 
-# Generated experiment artifacts
+# Generated local run artifacts & scratch logs
 reports/demo/
 *.log
+scratch/
+.system_generated/
 
-# Jupyter
+# Jupyter Notebook checkpoints
 .ipynb_checkpoints/
+
+# Frontend dependencies & build outputs (Next.js)
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/build/
+frontend/.vercel/
+frontend/*.tsbuildinfo
+frontend/next-env.d.ts
+frontend/.env*.local
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
