@@ -11,15 +11,22 @@
 }
 
 @theme {
-  --color-base: #E7E0D2;
+  --color-canvas: #E7E0D2;
   --color-surface: #EFE9DC;
+  --color-surface-recessed: #D8CDB8;
   --color-recessed: #D8CDB8;
   --color-ink: #241D14;
   --color-signal: #1F3347;
   --color-alert: #7A2E22;
   --color-steel: #9C7A3C;
+  --color-brass: #9C7A3C;
   --font-sans: var(--font-sans-main), sans-serif;
   --font-mono: var(--font-mono-main), monospace;
+}
+
+/* Background compatibility utility */
+.bg-base {
+  background-color: var(--bg-base);
 }
 
 /* Lenis smooth scroll */

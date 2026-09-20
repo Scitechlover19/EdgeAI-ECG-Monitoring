@@ -31,7 +31,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${sansFont.variable} ${monoFont.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col bg-base text-ink">
+      <body className="min-h-full flex flex-col bg-canvas text-ink">
         <SmoothScroll>{children}</SmoothScroll>
       </body>
     </html>

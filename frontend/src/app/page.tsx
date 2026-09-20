@@ -9,7 +9,7 @@ import Footer from "@/components/Footer";
 
 export default function Home() {
   return (
-    <main className="min-h-screen flex flex-col bg-base text-ink selection:bg-signal/20 selection:text-ink">
+    <main className="min-h-screen flex flex-col bg-canvas text-ink selection:bg-signal/20 selection:text-ink">
       <Navigation />
       <Hero />
       <ProblemStatement />
