@@ -51,6 +51,7 @@ def quantize_student_model(
     train_data_path: Path,
     output_tflite_path: Path,
     num_calibration_samples: int = 500,
+    save_alias: bool = True,
 ) -> Tuple[bytes, Dict[str, Any]]:
     """Convert a trained Keras Student model to full-integer INT8 TFLite flatbuffer.
 
@@ -59,6 +60,7 @@ def quantize_student_model(
         train_data_path: Path to X_train.npy file for representative calibration.
         output_tflite_path: Path to write quantized .tflite file.
         num_calibration_samples: Number of calibration windows from X_train (default 500).
+        save_alias: If True, also save to student_model.tflite alias (default True).
 
     Returns:
         Tuple of (tflite_bytes, metadata_dict).
@@ -67,7 +69,17 @@ def quantize_student_model(
         raise FileNotFoundError(f"Student Keras model checkpoint not found at {student_model_path}")
 
     logger.info(f"Loading trained Student Keras model from {student_model_path}...")
-    student_model = tf.keras.models.load_model(student_model_path, compile=False)
+    try:
+        student_model = tf.keras.models.load_model(student_model_path, compile=False)
+    except Exception:
+        import tempfile, zipfile
+        from src.models.student import build_student_model
+        student_model = build_student_model(input_shape=(200, 1), num_classes=2, seed=42)
+        with zipfile.ZipFile(student_model_path, "r") as z:
+            with tempfile.NamedTemporaryFile(suffix=".weights.h5", delete=False) as tmp:
+                tmp.write(z.read("model.weights.h5"))
+                tmp_path = tmp.name
+        student_model.load_weights(tmp_path)
 
     logger.info(
         f"Creating representative dataset generator using {num_calibration_samples} samples from {train_data_path}..."
@@ -90,10 +102,11 @@ def quantize_student_model(
     with open(output_tflite_path, "wb") as f:
         f.write(tflite_bytes)
 
-    # Also save standard student_model.tflite alias
-    alias_path = output_tflite_path.parent / "student_model.tflite"
-    with open(alias_path, "wb") as f:
-        f.write(tflite_bytes)
+    # Also save standard student_model.tflite alias if requested
+    if save_alias:
+        alias_path = output_tflite_path.parent / "student_model.tflite"
+        with open(alias_path, "wb") as f:
+            f.write(tflite_bytes)
 
     logger.info(
         f"INT8 TFLite model successfully exported to {output_tflite_path} ({len(tflite_bytes):,} bytes)."

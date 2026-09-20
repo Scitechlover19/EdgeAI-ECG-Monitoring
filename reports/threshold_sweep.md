@@ -1,7 +1,8 @@
 # Empirical Threshold Sweep & Operating Point Analysis Report
 
 **Date:** 2026-09-20  
-**Dataset Split:** Held-Out Test Set (`X_test.npy`, 51,992 windows, 7,278 ground-truth anomalies = 14.00% prevalence) `[MEASURED]`  
+**Dataset Split:** Held-Out Test Set (`X_test.npy`, 51,992 windows across 8 test records, 7,278 ground-truth anomalies = 14.00% prevalence) `[MEASURED]`  
+**Total ECG Test Duration:** 4.01 hours (14,442.2 seconds at 360 Hz, 100-sample step size) `[MEASURED]`  
 **Continuous Baseline:** 51,992 windows x 400 bytes/window = 20,796,800 bytes (19.83 MB) `[ASSUMED]`  
 **Measured Alert Payload:** 132.23 bytes/alert (AES-GCM encrypted metadata, 0 bytes raw ECG) `[MEASURED]`  
 **Target Constraint (NFR-6):** > 90.0% Network Payload Reduction  
@@ -10,22 +11,22 @@
 
 ## 1. Executive Summary & Core Findings
 
-This sweep resolves the trade-off between **minority-class arrhythmia recall** and **bandwidth reduction percentage** across decision thresholds tau in [0.30, 0.95] in 0.05 steps.
+This sweep evaluates the trade-off between **minority-class arrhythmia recall**, **precision / false alarm burden**, and **bandwidth reduction percentage** across decision thresholds $\tau \in [0.30, 0.95]$ in 0.05 increments.
 
 > [!IMPORTANT]
-> **Key Empirical Insights:**
-> 1. **Massive Bandwidth Headroom:** Because the average encrypted telemetry payload is only 132.23 bytes while the continuous raw baseline is 400 bytes per window, the radio transmission rate can reach up to **30.25%** before breaching the 90% NFR-6 threshold:
->    - Max Trigger Rate for 90% Reduction = (0.10 x 400) / 132.23 = 30.25%
->    - Even transmitting at a 2.7% trigger rate yields **> 99.1% bandwidth reduction**.
-> 2. **Failure of 0.85 Operating Point:** At threshold 0.85, the deployed INT8 model triggers on only 137 windows (0.26% rate), detecting only 137 of 7,278 anomalies (**1.88% recall**). While bandwidth reduction is 99.91%, clinical anomaly sensitivity is severely starved.
-> 3. **Operating Point Trade-offs:**
->    - At threshold **0.50**: Student (No KD) achieves **12.70% recall**, 66.09% precision, and **99.11% bandwidth reduction** (1,398 alerts).
->    - At threshold **0.50**: Student KD (T=6.0, alpha=0.5) achieves **17.24% recall**, 51.65% precision, and **98.45% bandwidth reduction** (2,430 alerts).
->    - At threshold **0.35**: Student KD achieves **25.86% recall**, 39.42% precision, and **97.08% bandwidth reduction** (4,774 alerts) — exceeding NFR-6 by +7.08 percentage points!
+> **Key Empirical Takeaways:**
+> 1. **Massive Bandwidth Headroom Across All Thresholds:** Because the encrypted alert payload is only 132.23 bytes while the continuous baseline is 400 bytes per window, transmission rates up to **30.25%** still meet the 90.0% NFR-6 ceiling. Every single evaluated threshold from 0.30 to 0.95 comfortably achieves $> 96.8\%$ reduction.
+> 2. **Failure of 0.85 Operating Point:** At $\tau=0.85$, the deployed No-KD INT8 model triggers on only 137 windows (0.26% rate), detecting only 49 of 7,278 anomalies (**0.67% recall**). While bandwidth reduction is 99.91%, 99.33% of arrhythmias are missed entirely.
+> 3. **INT8 Model Comparison (Table C vs. Table D):**
+>    - **Student KD INT8 (`student_kd_int8.tflite`)** significantly outperforms No-KD INT8 in sensitivity across every threshold:
+>      - At $\tau=0.50$: KD-INT8 detects **1,277 arrhythmias** (17.55% recall) vs. **622** for No-KD INT8 (8.55% recall) — **+105.3% more true positives detected**.
+>      - At $\tau=0.35$: KD-INT8 detects **1,986 arrhythmias** (27.29% recall) vs. **1,004** for No-KD INT8 (13.79% recall) — **+97.8% more true positives detected**.
+>    - **Student (No KD) INT8 (`student_model_int8.tflite`)** maintains higher precision (67.5% vs. 40.2% at $\tau=0.50$), producing fewer false alarms at the cost of missing more than half of detectable arrhythmias.
+> 4. **Alert Burden Context:** InIoMT systems, false alarms cause caregiver alert fatigue. Evaluating false positive counts and false alarms per hour is critical alongside bandwidth.
 
 ---
 
-## 2. Full Threshold Sweep: Student (No KD) Model (`student_no_kd_model.keras`)
+## 2. Table A: Student (No KD) Float32 Model (`student_no_kd_model.keras`)
 
 | Threshold (tau) | TP | FP | FN | TN | Recall (Sens.) [MEASURED] | Precision (PPV) [MEASURED] | F1 Score [MEASURED] | Active Triggers | Transmitted Bytes [MEASURED] | Bandwidth Reduction [MEASURED] | Meets NFR-6 (>90%) |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|:---:|
@@ -46,7 +47,7 @@ This sweep resolves the trade-off between **minority-class arrhythmia recall** a
 
 ---
 
-## 3. Full Threshold Sweep: Student KD Model ($T=6.0, \alpha=0.5$, Validation-Selected)
+## 3. Table B: Student KD Float32 Model ($T=6.0, \alpha=0.5$, Validation-Selected)
 
 | Threshold (tau) | TP | FP | FN | TN | Recall (Sens.) [MEASURED] | Precision (PPV) [MEASURED] | F1 Score [MEASURED] | Active Triggers | Transmitted Bytes [MEASURED] | Bandwidth Reduction [MEASURED] | Meets NFR-6 (>90%) |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|:---:|
@@ -67,7 +68,7 @@ This sweep resolves the trade-off between **minority-class arrhythmia recall** a
 
 ---
 
-## 4. Full Threshold Sweep: Deployed INT8 Quantized Model (`models/student_model_int8.tflite`)
+## 4. Table C: Deployed Student (No KD) INT8 Model (`models/student_model_int8.tflite`)
 
 | Threshold (tau) | TP | FP | FN | TN | Recall (Sens.) [MEASURED] | Precision (PPV) [MEASURED] | F1 Score [MEASURED] | Active Triggers | Transmitted Bytes [MEASURED] | Bandwidth Reduction [MEASURED] | Meets NFR-6 (>90%) |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|:---:|
@@ -88,18 +89,61 @@ This sweep resolves the trade-off between **minority-class arrhythmia recall** a
 
 ---
 
-## 5. Metrics @ Actual Scheduler Threshold 0.85 Comparison
+## 5. Table D: Quantized Student KD INT8 Model (`models/student_kd_int8.tflite`, Validation-Selected Winner)
 
-| Model Candidate | TP | FP | FN | TN | Accuracy `[MEASURED]` | Recall `[MEASURED]` | Precision `[MEASURED]` | F1 Score `[MEASURED]` | Active Alerts | Reduction `[MEASURED]` |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| **Teacher 1D-CNN** | 962 | 1,928 | 6,316 | 42,786 | 84.14% | 13.22% | 33.29% | 0.1892 | 2,890 | 98.16% |
-| **Student (No KD)** | 104 | 135 | 7,174 | 44,579 | 85.94% | 1.43% | 43.51% | 0.0277 | 239 | 99.85% |
-| **Student KD ($T=6.0, \alpha=0.5$)** | 86 | 113 | 7,192 | 44,601 | 85.95% | 1.18% | 43.22% | 0.0230 | 199 | 99.87% |
-| **Student INT8 TFLite** | 49 | 88 | 7,229 | 44,626 | 85.93% | 0.67% | 35.77% | 0.0132 | 137 | 99.91% |
+| Threshold (tau) | TP | FP | FN | TN | Recall (Sens.) [MEASURED] | Precision (PPV) [MEASURED] | F1 Score [MEASURED] | Active Triggers | Transmitted Bytes [MEASURED] | Bandwidth Reduction [MEASURED] | Meets NFR-6 (>90%) |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|:---:|
+| **0.30** | 2,303 | 2,646 | 4,975 | 42,068 | **31.64%** | 46.53% | **0.3767** | 4,949 (9.52%) | 654,406 B | **96.85%** | PASS |
+| **0.35** | 1,986 | 2,456 | 5,292 | 42,258 | **27.29%** | 44.71% | **0.3389** | 4,442 (8.54%) | 587,365 B | **97.18%** | PASS |
+| **0.40** | 1,691 | 2,275 | 5,587 | 42,439 | **23.23%** | 42.64% | **0.3008** | 3,966 (7.63%) | 524,424 B | **97.48%** | PASS |
+| **0.45** | 1,458 | 2,102 | 5,820 | 42,612 | **20.03%** | 40.96% | **0.2691** | 3,560 (6.85%) | 470,738 B | **97.74%** | PASS |
+| **0.50** | 1,277 | 1,902 | 6,001 | 42,812 | **17.55%** | 40.17% | **0.2442** | 3,179 (6.11%) | 420,359 B | **97.98%** | PASS |
+| **0.55** | 990 | 1,678 | 6,288 | 43,036 | **13.60%** | 37.11% | **0.1991** | 2,668 (5.13%) | 352,789 B | **98.30%** | PASS |
+| **0.60** | 822 | 1,511 | 6,456 | 43,203 | **11.29%** | 35.23% | **0.1711** | 2,333 (4.49%) | 308,492 B | **98.52%** | PASS |
+| **0.65** | 559 | 1,295 | 6,719 | 43,419 | **7.68%** | 30.15% | **0.1224** | 1,854 (3.57%) | 245,154 B | **98.82%** | PASS |
+| **0.70** | 382 | 1,106 | 6,896 | 43,608 | **5.25%** | 25.67% | **0.0872** | 1,488 (2.86%) | 196,758 B | **99.05%** | PASS |
+| **0.75** | 315 | 970 | 6,963 | 43,744 | **4.33%** | 24.51% | **0.0736** | 1,285 (2.47%) | 169,915 B | **99.18%** | PASS |
+| **0.80** | 207 | 751 | 7,071 | 43,963 | **2.84%** | 21.61% | **0.0503** | 958 (1.84%) | 126,676 B | **99.39%** | PASS |
+| **0.85** | 109 | 596 | 7,169 | 44,118 | **1.50%** | 15.46% | **0.0273** | 705 (1.36%) | 93,222 B | **99.55%** | PASS |
+| **0.90** | 51 | 460 | 7,227 | 44,254 | **0.70%** | 9.98% | **0.0131** | 511 (0.98%) | 67,569 B | **99.68%** | PASS |
+| **0.95** | 16 | 323 | 7,262 | 44,391 | **0.22%** | 4.72% | **0.0042** | 339 (0.65%) | 44,826 B | **99.78%** | PASS |
 
 ---
 
-## 6. Visual Trade-off Curves
+## 6. Metrics @ Actual Scheduler Threshold 0.85 Comparison
+
+| Model Candidate | TP | FP | FN | TN | Test Accuracy `[MEASURED]` | Test Recall `[MEASURED]` | Test Precision `[MEASURED]` | Test F1 Score `[MEASURED]` | Active Alerts `[MEASURED]` | Bandwidth Reduction `[MEASURED]` |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| **Teacher 1D-CNN (Float32)** | 962 | 1,928 | 6,316 | 42,786 | 84.14% | 13.22% | 33.29% | 0.1892 | 2,890 | 98.16% |
+| **Student (No KD) Float32** | 104 | 135 | 7,174 | 44,579 | 85.94% | 1.43% | 43.51% | 0.0277 | 239 | 99.85% |
+| **Student KD ($T=6.0, \alpha=0.5$) Float32** | 86 | 113 | 7,192 | 44,601 | 85.95% | 1.18% | 43.22% | 0.0230 | 199 | 99.87% |
+| **Student (No KD) INT8 TFLite** | 49 | 88 | 7,229 | 44,626 | 85.93% | **0.67%** | 35.77% | **0.0132** | **137** (0.26%) | **99.91%** |
+| **Student KD INT8 TFLite** | 109 | 596 | 7,169 | 44,118 | 85.07% | **1.50%** | 15.46% | **0.0273** | **705** (1.36%) | **99.55%** |
+
+---
+
+## 7. Operating Point & Clinical Alert Burden Comparison (INT8 Deployed Candidates Only)
+
+To drive the deployment decision, this section compares **ONLY INT8 quantized candidates** (Table C vs. Table D) and incorporates **clinical alert burden** over the 4.01 hours of monitored patient ECG:
+
+| Candidate Operating Point | Model Format | Decision Threshold ($\tau$) | True Positives (Detected Arrhythmias) | Anomaly Recall (Sens.) | Precision (PPV) | False Alarms (FP Count) | False Alarm Rate (FPs / Hour) | False Discovery Rate (FDR) | Transmitted Telemetry | Bandwidth Reduction |
+|---|---|:---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| **Status Quo (Overly Conservative)** | No-KD INT8 | **0.85** | 49 | **0.67%** | 35.77% | 88 | **21.9 / hr** | 64.23% | 18.1 KB | **99.91%** |
+| **Option 1: Balanced KD Sensitivity** | **KD INT8** | **0.50** | **1,277** | **17.55%** | 40.17% | 1,902 | **474.1 / hr** | 59.83% | 420.4 KB | **97.98%** |
+| **Option 2: High KD Recall** | **KD INT8** | **0.35** | **1,986** | **27.29%** | 44.71% | 2,456 | **612.2 / hr** | 55.29% | 587.4 KB | **97.18%** |
+| **Option 3: High Precision / Low Burden** | **No-KD INT8** | **0.50** | **622** | **8.55%** | **67.46%** | **300** | **74.8 / hr** | **32.54%** | 121.9 KB | **99.41%** |
+| **Option 4: Moderate Sensitivity / Balanced Burden** | **No-KD INT8** | **0.35** | **1,004** | **13.79%** | **66.45%** | **507** | **126.4 / hr** | **33.55%** | 199.8 KB | **99.04%** |
+
+### Clinical Trade-off Synthesis:
+1. **Bandwidth Headroom is Universal:** All options achieve between **97.18% and 99.91% bandwidth reduction**, exceeding the 90.0% requirement by 7.18 to 9.91 percentage points. Network bandwidth does NOT constrain this decision.
+2. **Alert Burden vs. Sensitivity Dilemma:**
+   - **Option 1 (KD INT8 @ 0.50):** Delivers **1,277 detected arrhythmias** ($26.1\times$ more than status quo), but generates 1,902 false alarms (~7.9 false alerts per minute).
+   - **Option 3 (No-KD INT8 @ 0.50):** Delivers **622 detected arrhythmias** ($12.7\times$ more than status quo) with **only 300 false alarms** (~1.2 false alerts per minute, precision 67.5%), offering a much lower alert fatigue profile.
+   - **Option 4 (No-KD INT8 @ 0.35):** Captures **1,004 detected arrhythmias** (13.79% recall) while keeping precision at **66.45%** (507 false alarms over 4 hours = ~2.1 false alerts/min), achieving **99.04% bandwidth reduction**.
+
+---
+
+## 8. Visual Trade-off Curves (INT8 Deployed Models)
 
 ![ROC and Precision-Recall Curves](reports/threshold_roc_pr.png)
 
