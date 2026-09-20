@@ -22,39 +22,65 @@ logger = setup_logging()
 
 
 def profile_inference_latency(
-    engine: TinyMLEngine, windows: np.ndarray, num_windows: int = 1000
-) -> Dict[str, float]:
+    engine: TinyMLEngine,
+    windows: np.ndarray,
+    num_windows: int = 1000,
+    num_runs: int = 3,
+) -> Dict[str, Any]:
     """Measure inference latency across test windows using high-precision time.perf_counter().
+
+    Executes a warmup phase followed by multi-run benchmarking (default 3 runs of 1,000 windows)
+    to mitigate host OS scheduling jitter and provide statistically repeatable latency estimates.
 
     Args:
         engine: Initialized TinyMLEngine instance hosting the INT8 model.
         windows: Preprocessed 2D numpy array of ECG windows shape (N, 200).
-        num_windows: Maximum number of windows to benchmark (default 1000).
+        num_windows: Maximum number of windows to benchmark per run (default 1000).
+        num_runs: Number of repeated benchmark passes (default 3).
 
     Returns:
-        Dict containing mean, median, p95, min, max latency in milliseconds [MEASURED].
+        Dict containing mean, std, median, p95, min, max latency in milliseconds [MEASURED].
     """
     eval_windows = windows[:num_windows]
-    latencies_ms: List[float] = []
+    if len(eval_windows) == 0:
+        raise ValueError("No windows provided for latency benchmarking.")
 
-    # Warmup run (5 iterations)
-    for i in range(min(5, len(eval_windows))):
-        engine.invoke_inference(eval_windows[i])
+    # 1. Warmup run (50 iterations to prime CPU cache, frequency scaling, and thread pools)
+    warmup_count = min(50, len(eval_windows))
+    for i in range(warmup_count):
+        engine.invoke_inference(eval_windows[i % len(eval_windows)])
 
-    logger.info(f"Benchmarking inference latency over {len(eval_windows)} windows...")
-    for i in range(len(eval_windows)):
-        _, _, _, lat_ms = engine.invoke_inference(eval_windows[i])
-        latencies_ms.append(lat_ms)
+    logger.info(
+        f"Benchmarking inference latency: {num_runs} runs x {len(eval_windows)} windows "
+        f"({num_runs * len(eval_windows)} total inferences)..."
+    )
 
-    lat_arr = np.array(latencies_ms, dtype=np.float64)
+    # 2. Multi-run benchmark execution
+    run_latencies: List[List[float]] = []
+    for r in range(num_runs):
+        lats: List[float] = []
+        for i in range(len(eval_windows)):
+            _, _, _, lat_ms = engine.invoke_inference(eval_windows[i])
+            lats.append(lat_ms)
+        run_latencies.append(lats)
+
+    # 3. Statistical aggregation
+    all_latencies = np.concatenate(run_latencies)
+    run_means = [float(np.mean(r)) for r in run_latencies]
+    mean_of_runs = float(np.mean(run_means))
+    std_of_runs = float(np.std(run_means))
 
     return {
-        "mean_ms": float(np.mean(lat_arr)),
-        "median_ms": float(np.median(lat_arr)),
-        "p95_ms": float(np.percentile(lat_arr, 95)),
-        "min_ms": float(np.min(lat_arr)),
-        "max_ms": float(np.max(lat_arr)),
+        "mean_ms": mean_of_runs,
+        "std_ms": std_of_runs,
+        "median_ms": float(np.median(all_latencies)),
+        "p95_ms": float(np.percentile(all_latencies, 95)),
+        "min_ms": float(np.min(all_latencies)),
+        "max_ms": float(np.max(all_latencies)),
         "benchmark_windows": len(eval_windows),
+        "num_runs": num_runs,
+        "total_inferences": len(all_latencies),
+        "run_means": run_means,
     }
 
 
@@ -111,7 +137,11 @@ def generate_profile_report(
 
     # 3. Load dataset & benchmark latency
     engine = TinyMLEngine(model_path=model_path, virtual_mcu=vmcu)
-    _, _, _, _, X_test, _ = load_processed_datasets(Path(config.paths.data_dir))
+    x_test_path = Path(config.paths.data_dir) / "processed" / "X_test.npy"
+    if x_test_path.exists():
+        X_test = np.load(x_test_path, mmap_mode="r")
+    else:
+        _, _, _, _, X_test, _ = load_processed_datasets(Path(config.paths.data_dir))
     latency_stats = profile_inference_latency(engine, X_test, num_windows=num_benchmark_windows)
 
     # 4. Host Benchmark System Information
@@ -156,11 +186,11 @@ def generate_profile_report(
 ## 1. Latency Benchmark Statistics (`[MEASURED]`)
 
 > [!NOTE]
-> Latency was measured directly using high-precision `time.perf_counter()` over {latency_stats['benchmark_windows']:,} individual 200-sample window inferences in Python 3.13 on the host development workstation. This is host-PC simulated execution timing, not physical microcontroller silicon execution.
+> Latency was measured directly using high-precision `time.perf_counter()` across {latency_stats['num_runs']} repeated benchmark runs of {latency_stats['benchmark_windows']:,} individual 200-sample window inferences ({latency_stats['total_inferences']:,} total inferences, preceded by a 50-window warmup) on the host development workstation. This multi-pass methodology mitigates host-PC OS scheduler jitter and CPU power-state ramping.
 
 | Latency Metric | Measured Host-PC Value `[MEASURED]` | Budget Limit (NFR-3) | Compliance Status |
 |---|---|---|---|
-| **Mean Latency** | **{latency_stats['mean_ms']:.4f} ms** | < 50.0 ms | **{"PASS" if latency_pass else "FAIL"}** |
+| **Mean Latency (across {latency_stats['num_runs']} runs)** | **{latency_stats['mean_ms']:.4f} ± {latency_stats['std_ms']:.4f} ms** | < 50.0 ms | **{"PASS" if latency_pass else "FAIL"}** |
 | **Median Latency** | **{latency_stats['median_ms']:.4f} ms** | < 50.0 ms | **PASS** |
 | **p95 Latency** | **{latency_stats['p95_ms']:.4f} ms** | < 50.0 ms | **PASS** |
 | **Minimum Latency** | **{latency_stats['min_ms']:.4f} ms** | < 50.0 ms | **PASS** |
@@ -201,7 +231,7 @@ def generate_profile_report(
 |---|---|---|---|---|
 | **NFR-1** | MCU Peak SRAM Constraint | **{sram_peak_kb:.2f} KB** `[ESTIMATED]` | $\le$ 256.0 KB | **PASS** |
 | **NFR-2** | MCU Flash Memory Constraint | **{flash_kb:.2f} KB** `[MEASURED]` | $<$ 1.0 MB (1024 KB) | **PASS** |
-| **NFR-3** | Edge Per-Window Latency Constraint | **{latency_stats['mean_ms']:.4f} ms** `[MEASURED]` | $<$ 50.0 ms | **PASS** |
+| **NFR-3** | Edge Per-Window Latency Constraint | **{latency_stats['mean_ms']:.4f} ± {latency_stats['std_ms']:.4f} ms** `[MEASURED]` | $<$ 50.0 ms | **PASS** |
 
 ---
 
@@ -226,7 +256,7 @@ def generate_profile_report(
     logger.info(f"Resource report successfully saved to {report_file}")
 
     print("\n--- MEASURED RESOURCE PROFILING SUMMARY ---")
-    print(f"Mean Latency   : {latency_stats['mean_ms']:.4f} ms (Limit: < 50 ms, PASS)")
+    print(f"Mean Latency   : {latency_stats['mean_ms']:.4f} ± {latency_stats['std_ms']:.4f} ms (Limit: < 50 ms, PASS)")
     print(f"Median Latency : {latency_stats['median_ms']:.4f} ms")
     print(f"P95 Latency    : {latency_stats['p95_ms']:.4f} ms")
     print(f"Min / Max      : {latency_stats['min_ms']:.4f} ms / {latency_stats['max_ms']:.4f} ms")

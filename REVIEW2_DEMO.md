@@ -72,7 +72,7 @@ All metrics evaluated against Review-1 Non-Functional Requirements (NFRs):
 |---|---|---|---|---|
 | **NFR-1** | Peak Simulated SRAM | $\le 256.0\text{ KB}$ | **15.16 KB** `[ESTIMATED]` | **PASS** |
 | **NFR-2** | Model Flash Memory | $< 1.0\text{ MB}$ ($1,024\text{ KB}$) | **10.96 KB** `[MEASURED]` | **PASS** |
-| **NFR-3** | Per-Window Latency | $< 50.0\text{ ms}$ | **0.0600 ms** `[MEASURED]` | **PASS** |
+| **NFR-3** | Per-Window Latency | $< 50.0\text{ ms}$ | **0.1599 ± 0.0126 ms** `[MEASURED]` | **PASS** |
 
 Report artifact: [`reports/resource_report.md`](file:///d:/Project/EdgeAI-ECG-Monitoring/reports/resource_report.md).
 

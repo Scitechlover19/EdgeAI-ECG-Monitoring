@@ -1,6 +1,6 @@
 # Resource Profiling & Budget Verification Report (P0-14)
 
-**Date:** 2026-09-20 22:36:28  
+**Date:** 2026-09-21 01:58:30  
 **Deployable Artifact:** [`models/student_model_int8.tflite`](file:///models/student_model_int8.tflite)  
 **Execution Environment:** Host PC Edge-AI Simulation Harness (`[SIMULATED]`)  
 **Benchmarked Windows:** 1,000 preprocessed ECG test windows (`[MEASURED]`)
@@ -10,15 +10,15 @@
 ## 1. Latency Benchmark Statistics (`[MEASURED]`)
 
 > [!NOTE]
-> Latency was measured directly using high-precision `time.perf_counter()` over 1,000 individual 200-sample window inferences in Python 3.13 on the host development workstation. This is host-PC simulated execution timing, not physical microcontroller silicon execution.
+> Latency was measured directly using high-precision `time.perf_counter()` across 3 repeated benchmark runs of 1,000 individual 200-sample window inferences (3,000 total inferences, preceded by a 50-window warmup) on the host development workstation. This multi-pass methodology mitigates host-PC OS scheduler jitter and CPU power-state ramping.
 
 | Latency Metric | Measured Host-PC Value `[MEASURED]` | Budget Limit (NFR-3) | Compliance Status |
 |---|---|---|---|
-| **Mean Latency** | **0.0600 ms** | < 50.0 ms | **PASS** |
-| **Median Latency** | **0.0550 ms** | < 50.0 ms | **PASS** |
-| **p95 Latency** | **0.0979 ms** | < 50.0 ms | **PASS** |
-| **Minimum Latency** | **0.0506 ms** | < 50.0 ms | **PASS** |
-| **Maximum Latency** | **0.1309 ms** | < 50.0 ms | **PASS** |
+| **Mean Latency (across 3 runs)** | **0.1599 ± 0.0126 ms** | < 50.0 ms | **PASS** |
+| **Median Latency** | **0.1101 ms** | < 50.0 ms | **PASS** |
+| **p95 Latency** | **0.3632 ms** | < 50.0 ms | **PASS** |
+| **Minimum Latency** | **0.0564 ms** | < 50.0 ms | **PASS** |
+| **Maximum Latency** | **9.9728 ms** | < 50.0 ms | **PASS** |
 
 ---
 
@@ -55,7 +55,7 @@
 |---|---|---|---|---|
 | **NFR-1** | MCU Peak SRAM Constraint | **15.16 KB** `[ESTIMATED]` | $\le$ 256.0 KB | **PASS** |
 | **NFR-2** | MCU Flash Memory Constraint | **10.96 KB** `[MEASURED]` | $<$ 1.0 MB (1024 KB) | **PASS** |
-| **NFR-3** | Edge Per-Window Latency Constraint | **0.0600 ms** `[MEASURED]` | $<$ 50.0 ms | **PASS** |
+| **NFR-3** | Edge Per-Window Latency Constraint | **0.1599 ± 0.0126 ms** `[MEASURED]` | $<$ 50.0 ms | **PASS** |
 
 ---
 
