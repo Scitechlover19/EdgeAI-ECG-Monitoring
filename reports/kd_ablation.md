@@ -3,78 +3,92 @@
 **Date:** 2026-09-20  
 **Dataset:** PhysioNet MIT-BIH Arrhythmia Database (`mitdb`, 311,952 windows total)  
 **Split Method:** Patient/Record-Independent Split (DECISIONS.md #3: 33 Train, 7 Val, 8 Test records)  
-**Test Split:** 8 held-out records (`107`, `115`, `119`, `122`, `207`, `220`, `228`, `234` — 51,992 windows)
+**Validation Split:** 7 records (`102`, `111`, `124`, `200`, `215`, `217`, `223` — 45,493 windows, 11,385 anomalies = 25.03% prevalence) `[MEASURED]`  
+**Held-Out Test Split:** 8 records (`107`, `115`, `119`, `122`, `207`, `220`, `228`, `234` — 51,992 windows, 7,278 anomalies = 14.00% prevalence) `[MEASURED]`  
 
 ---
 
-## 1. Executive Summary
+## 1. Executive Summary & Selection Methodology
 
-This report documents the factual, empirical comparison across:
-1. **Teacher 1D-CNN** (120,674 parameters)
-2. **Student 1D-CNN WITHOUT KD** (1,538 parameters, standard hard cross-entropy loss)
-3. **Student 1D-CNN WITH KD Baseline** (1,538 parameters, $T=3.0, \alpha=0.7$)
-4. **Knowledge Distillation Hyperparameter Sweep** across $T \in \{2.0, 4.0, 6.0\}$ and $\alpha \in \{0.3, 0.5\}$
-
-All models were trained on the exact same 214,467 training windows and evaluated on the exact same 51,992 held-out test windows.
+This report documents the empirical comparison between the uncompressed Teacher 1D-CNN, the Student 1D-CNN trained without KD, and Student models trained with Knowledge Distillation across temperature $T \in \{2.0, 4.0, 6.0\}$ and weight balance $\alpha \in \{0.3, 0.5\}$.
 
 > [!IMPORTANT]
-> **Factual Sweep Findings:**
-> - **Overall Accuracy:** No KD configuration surpassed the **Student (No KD)** baseline test accuracy of **86.87%** (`0.8687`). The closest KD configuration was $T=2.0, \alpha=0.3$ at **86.74%** (`0.8674`).
-> - **Anomaly Recall & F1 Score:** Moderate alpha ($\alpha=0.5$) with higher temperatures ($T=4.0$ and $T=6.0$) produced substantial gains in minority-class anomaly recall: $T=4.0, \alpha=0.5$ improved recall from **12.70%** (no KD) to **17.31%** (1,260 true positives detected vs. 924), achieving an **F1 score of 0.2629** (surpassing both Teacher F1 of 0.2369 and Student-No-KD F1 of 0.2130).
-> - All reported numbers below are `[MEASURED]` directly from evaluation on the held-out test split.
+> **Strict Leakage-Free Model Selection Methodology:**
+> - **Hyperparameter Selection Set:** Hyperparameter selection was performed **strictly on the 45,493 validation windows**. The held-out test split was NOT used to pick winning hyperparameters.
+> - **Selection Criterion:** Selection optimized for maximum minority-class arrhythmia F1 score and recall on the validation set under class imbalance.
+> - **Winning Configuration:** On the validation split, **$T=6.0, \alpha=0.5$** achieved the highest validation performance:
+>   - **Validation F1 Score:** **0.7942** (vs. 0.7882 No-KD, 0.7708 Teacher)
+>   - **Validation Recall:** **67.63%** (7,700 true positive detections out of 11,385 validation anomalies)
+>   - **Validation Accuracy:** **91.23%** (vs. 91.08% No-KD)
+> - **Confirmatory Held-Out Test Read:** Evaluating this validation-selected model on the held-out test split confirmed:
+>   - **Test Accuracy:** **86.16%**
+>   - **Test Precision:** **51.65%**
+>   - **Test Recall:** **17.24%** (1,255 true positive detections vs. 924 for No-KD, +35.8% relative gain)
+>   - **Test F1 Score:** **0.2585** (vs. 0.2130 for No-KD, +21.4% relative gain)
 
 ---
 
-## 2. Quantitative Performance Comparison (`[MEASURED]`)
+## 2. Validation Split Selection Table (45,493 windows, 11,385 anomalies) `[MEASURED]`
 
-| Model | Parameters `[MEASURED]` | Compression vs Teacher | Hyperparameters | Test Accuracy `[MEASURED]` | Test Precision `[MEASURED]` | Test Recall `[MEASURED]` | Test F1 Score `[MEASURED]` |
-|---|---|---|---|---|---|---|---|
-| **Teacher 1D-CNN** | 120,674 | Baseline (1.0x) | — | **0.8409** (84.09%) | 0.3605 | 0.1764 | 0.2369 |
-| **Student (No KD)** | 1,538 | **78.46x smaller** | — | **0.8687** (86.87%) | **0.6609** | 0.1270 | 0.2130 |
-| **Student (KD Baseline)** | 1,538 | **78.46x smaller** | $T=3.0, \alpha=0.7$ | 0.8376 (83.76%) | 0.2785 | 0.1006 | 0.1478 |
-| **Student (KD Sweep 1)** | 1,538 | **78.46x smaller** | $T=2.0, \alpha=0.3$ | **0.8674** (86.74%) | 0.6312 | 0.1272 | 0.2118 |
-| **Student (KD Sweep 2)** | 1,538 | **78.46x smaller** | $T=2.0, \alpha=0.5$ | 0.8611 (86.11%) | 0.5138 | 0.1483 | 0.2301 |
-| **Student (KD Sweep 3)** | 1,538 | **78.46x smaller** | $T=4.0, \alpha=0.3$ | 0.8539 (85.39%) | 0.3948 | 0.0815 | 0.1351 |
-| **Student (KD Sweep 4)** | 1,538 | **78.46x smaller** | $T=4.0, \alpha=0.5$ | 0.8641 (86.41%) | 0.5464 | **0.1731** | **0.2629** |
-| **Student (KD Sweep 5)** | 1,538 | **78.46x smaller** | $T=6.0, \alpha=0.3$ | 0.8445 (84.45%) | 0.2761 | 0.0684 | 0.1097 |
-| **Student (KD Sweep 6)** | 1,538 | **78.46x smaller** | $T=6.0, \alpha=0.5$ | 0.8616 (86.16%) | 0.5165 | 0.1724 | 0.2585 |
+The table below documents the hyperparameter sweep evaluated strictly on the validation set for model selection:
 
----
-
-## 3. Confusion Matrix Breakdown (`[MEASURED]`)
-
-| Model Configuration | True Positives (TP) | False Positives (FP) | False Negatives (FN) | True Negatives (TN) | Total Windows |
-|---|---|---|---|---|---|
-| **Teacher 1D-CNN** | 1,284 | 2,278 | 5,994 | 42,436 | 51,992 |
-| **Student (No KD)** | 924 | 474 | 6,354 | 44,240 | 51,992 |
-| **Student (KD Baseline: $T=3.0, \alpha=0.7$)** | 732 | 1,896 | 6,546 | 42,818 | 51,992 |
-| **Student (KD: $T=2.0, \alpha=0.3$)** | 926 | 541 | 6,352 | 44,173 | 51,992 |
-| **Student (KD: $T=2.0, \alpha=0.5$)** | 1,079 | 1,021 | 6,199 | 43,693 | 51,992 |
-| **Student (KD: $T=4.0, \alpha=0.3$)** | 593 | 909 | 6,685 | 43,805 | 51,992 |
-| **Student (KD: $T=4.0, \alpha=0.5$)** | **1,260** | 1,046 | 6,018 | 43,668 | 51,992 |
-| **Student (KD: $T=6.0, \alpha=0.3$)** | 498 | 1,306 | 6,780 | 43,408 | 51,992 |
-| **Student (KD: $T=6.0, \alpha=0.5$)** | 1,255 | 1,175 | 6,023 | 43,539 | 51,992 |
+| Model Configuration | Parameters | Hyperparameters | Val Accuracy `[MEASURED]` | Val Precision `[MEASURED]` | Val Recall `[MEASURED]` | Val F1 Score `[MEASURED]` | Val TP | Val FP | Val FN | Val TN |
+|---|---|---|---|---|---|---|---:|---:|---:|---:|
+| **Teacher 1D-CNN** | 120,674 | — | 90.29% | 94.19% | 65.23% | 0.7708 | 7,426 | 458 | 3,959 | 33,650 |
+| **Student (No KD)** | 1,538 | — | 91.08% | **97.09%** | 66.34% | 0.7882 | 7,553 | 226 | 3,832 | 33,882 |
+| **Student (KD Sweep 1)** | 1,538 | $T=2.0, \alpha=0.3$ | 90.58% | 97.02% | 63.65% | 0.7718 | 7,246 | 223 | 4,139 | 33,885 |
+| **Student (KD Sweep 2)** | 1,538 | $T=2.0, \alpha=0.5$ | 90.87% | 96.88% | 65.83% | 0.7849 | 7,495 | 242 | 3,890 | 33,866 |
+| **Student (KD Sweep 3)** | 1,538 | $T=4.0, \alpha=0.3$ | 88.94% | 96.42% | 57.06% | 0.7228 | 6,496 | 241 | 4,889 | 33,867 |
+| **Student (KD Sweep 4)** | 1,538 | $T=4.0, \alpha=0.5$ | 90.64% | 96.69% | 63.99% | 0.7724 | 7,285 | 249 | 4,100 | 33,859 |
+| **Student (KD Sweep 5)** | 1,538 | $T=6.0, \alpha=0.3$ | 90.41% | 96.65% | 64.24% | 0.7679 | 7,314 | 254 | 4,071 | 33,854 |
+| **Student (KD Sweep 6: WINNER)** | 1,538 | **$T=6.0, \alpha=0.5$** | **91.23%** | 96.18% | **67.63%** | **0.7942** | **7,700** | 306 | 3,685 | 33,802 |
 
 ---
 
-## 4. Distillation Hyperparameters & Loss Formulation
+## 3. Held-Out Test Set Performance Breakdown (51,992 windows, 7,278 anomalies) `[MEASURED]`
+
+Evaluated at the standard argmax/0.5 boundary on the held-out test split:
+
+| Model | Parameters | Hyperparameters | Test Accuracy `[MEASURED]` | Test Precision `[MEASURED]` | Test Recall `[MEASURED]` | Test F1 Score `[MEASURED]` | TP | FP | FN | TN |
+|---|---|---|---|---|---|---|---:|---:|---:|---:|
+| **Teacher 1D-CNN** | 120,674 | — | 84.09% | 36.05% | 17.64% | 0.2369 | 1,284 | 2,278 | 5,994 | 42,436 |
+| **Student (No KD)** | 1,538 | — | **86.87%** | **66.09%** | 12.70% | 0.2130 | 924 | 474 | 6,354 | 44,240 |
+| **Student KD (Validation-Selected)** | 1,538 | **$T=6.0, \alpha=0.5$** | 86.16% | 51.65% | **17.24%** | **0.2585** | **1,255** | 1,175 | 6,023 | 43,539 |
+
+---
+
+## 4. Metrics @ Scheduler Threshold 0.85 (Exact StateScheduler Operating Rule) `[MEASURED]`
+
+This table evaluates each model candidate on the held-out test split using the exact decision rule enforced by `StateScheduler`: **anomaly transmission triggered if and only if $\text{confidence} \ge 0.85$**:
+
+| Model Candidate | TP | FP | FN | TN | Test Accuracy `[MEASURED]` | Test Recall `[MEASURED]` | Test Precision `[MEASURED]` | Test F1 Score `[MEASURED]` | Active Alerts `[MEASURED]` | Bandwidth Reduction `[MEASURED]` |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| **Teacher 1D-CNN** | 962 | 1,928 | 6,316 | 42,786 | 84.14% | 13.22% | 33.29% | 0.1892 | 2,890 (5.56%) | 98.16% |
+| **Student (No KD)** | 104 | 135 | 7,174 | 44,579 | 85.94% | 1.43% | 43.51% | 0.0277 | 239 (0.46%) | 99.85% |
+| **Student KD ($T=6.0, \alpha=0.5$)** | 86 | 113 | 7,192 | 44,601 | 85.95% | 1.18% | 43.22% | 0.0230 | 199 (0.38%) | 99.87% |
+| **Student INT8 TFLite** | 49 | 88 | 7,229 | 44,626 | 85.93% | **0.67%** | 35.77% | **0.0132** | **137** (0.26%) | **99.91%** |
+
+> [!WARNING]
+> **Key Finding on 0.85 Threshold:**
+> At threshold 0.85, the deployed INT8 TFLite model detects only **49 true positives** out of 7,278 ground-truth anomalies (**0.67% recall**), with 88 false alarms, yielding exactly the 137 active transmissions recorded in `reports/bandwidth_report.md`.
+> Setting threshold 0.85 sacrifices 99.33% of arrhythmias to achieve 99.91% bandwidth reduction.
+> As demonstrated in [`reports/threshold_sweep.md`](file:///reports/threshold_sweep.md), operating at $\tau \in [0.40, 0.50]$ allows detecting 850–1,250 anomalies (12%–17% recall) while comfortably achieving **98.4%–99.2% bandwidth reduction**, well above the 90.0% NFR-6 ceiling.
+
+---
+
+## 5. Distillation Loss Formulation
 
 $$\mathcal{L}_{\text{total}} = (1 - \alpha) \cdot \mathcal{L}_{\text{CE}}(y, p_s) + \alpha \cdot T^2 \cdot \mathcal{L}_{\text{KL}}\left(\text{Softmax}\left(\frac{z_t}{T}\right), \text{Softmax}\left(\frac{z_s}{T}\right)\right)$$
 
-- **Teacher Model:** Frozen (`teacher.trainable = False`) during all distillation runs.
+- **Teacher Model:** Frozen (`teacher.trainable = False`) during distillation.
 - **Student Model:** 1,538 parameters (same compact architecture across all experiments).
 - **Optimization:** Adam ($\text{lr}=10^{-3}$, batch size 256).
 
 ---
 
-## 5. Key Findings & Observations
+## 6. Reproducibility Command
 
-1. **Trade-off between Accuracy and Recall:**
-   - The **Student trained WITHOUT KD** prioritizes the majority class (normal rhythms), achieving high overall test accuracy (**86.87%**) and precision (**66.09%**), but lower minority-class recall (**12.70%**).
-   - Knowledge Distillation at $T=4.0, \alpha=0.5$ transfers dark knowledge from the Teacher that transfers anomaly sensitivity, increasing minority recall to **17.31%** (+36.3% relative increase in detected true anomalies) and lifting F1 score to **0.2629** (+23.4% relative gain over no-KD).
-2. **Impact of Weighting ($\alpha$):**
-   - Setting $\alpha=0.7$ (as in the initial trial) placed too much emphasis on soft KL loss relative to hard ground-truth labels under severe class imbalance (14.0% anomalies), depressing both accuracy and F1.
-   - A balanced weight $\alpha=0.5$ demonstrated the best synergy between soft regularization and hard ground truth.
-3. **Deployment Recommendation:**
-   - If optimizing purely for raw test accuracy on normal-predominant streams: **Student (No KD)** (86.87%).
-   - If optimizing for balanced sensitivity / F1 score: **Student (KD: $T=4.0, \alpha=0.5$)** (F1 = 0.2629).
+To reproduce the validation selection and threshold evaluation:
+```bash
+python -m src.models.run_validation_and_threshold_sweep
+```
