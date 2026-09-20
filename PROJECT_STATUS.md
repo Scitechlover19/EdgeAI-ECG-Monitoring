@@ -41,7 +41,7 @@ d:/Project/EdgeAI-ECG-Monitoring
 │   │   └── controller.py       # 5-stage pipeline controller & execution loop
 │   ├── scheduler/
 │   │   ├── __init__.py
-│   │   └── state_scheduler.py  # Anomaly state machine (SLEEP / ACTIVE, threshold=0.85)
+│   │   └── state_scheduler.py  # Anomaly state machine (SLEEP / ACTIVE, threshold=0.35)
 │   └── telemetry/
 │       ├── __init__.py
 │       ├── secure_telemetry.py # Metadata schema & AES-GCM 256-bit encryption
@@ -121,7 +121,7 @@ The core 5-stage pipeline slice is operational and validated with 37 unit and in
 
 ## 6. Recommended Next Implementation Steps
 
-All Review-2 **P0 Must-Have Tasks** (P0-1 through P0-16) and **P1-1** are **100% COMPLETE and VERIFIED** (79/79 tests passing).
+All Review-2 **P0 Must-Have Tasks** (P0-1 through P0-16) and **P1-1** are **100% COMPLETE and VERIFIED** (80/80 tests passing).
 Next in queue:
 - **P1-2**: MIT-BIH record replay CLI (`src/cli/run_demo.py` & `tests/test_cli_smoke.py`).
 - **P1-3**: Metrics visualization plots (`src/reports/plots.py` & `tests/test_plots.py`).

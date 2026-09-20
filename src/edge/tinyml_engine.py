@@ -155,12 +155,14 @@ class TinyMLEngine:
 
             else:
                 # Baseline heuristic runner for vertical slice testing when model path is not supplied
-                # Peak-to-peak amplitude > 3.0 or high variance indicates arrhythmia anomaly
+                # Peak-to-peak amplitude > 3.0 indicates arrhythmia anomaly
                 ptp = float(np.ptp(clean_window))
-                std = float(np.std(clean_window))
-                # Heuristic anomaly score
-                score = min(1.0, max(0.0, (ptp - 1.5) / 2.5))
-                label = self.LABEL_ANOMALY if score >= 0.85 else self.LABEL_NORMAL
+                if ptp <= 3.0:
+                    score = max(0.0, min(0.20, (ptp - 1.0) / 10.0))
+                    label = self.LABEL_NORMAL
+                else:
+                    score = min(1.0, 0.5 + (ptp - 3.0) / 5.0)
+                    label = self.LABEL_ANOMALY
                 return score, label
 
         (confidence, label_idx), latency_ms = self.virtual_mcu.profile_execution(_raw_inference)

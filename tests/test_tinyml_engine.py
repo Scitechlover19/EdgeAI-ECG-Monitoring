@@ -109,8 +109,8 @@ def test_regression_confidence_not_squashed_by_double_softmax(tmp_path: Path) ->
     clean_window = np.zeros(200, dtype=np.float32)
     conf, label, label_str, _ = engine.invoke_inference(clean_window)
 
-    # Under double-softmax bug, max possible confidence was squashed to ~0.7217 (<= 0.731)
-    assert conf > 0.85, f"Confidence {conf} was squashed below 0.85 (double-softmax bug regressed!)"
+    # Under double-softmax bug, max possible confidence was squashed to ~0.7217 (<= 0.731058)
+    assert conf > 0.731, f"Confidence {conf} was squashed below theoretical ceiling 0.731 (double-softmax bug regressed!)"
     assert label == 1
     assert label_str == "ANOMALY"
 
@@ -121,6 +121,7 @@ def test_regression_confidence_not_squashed_by_double_softmax(tmp_path: Path) ->
         real_engine = TinyMLEngine(model_path=real_model_path)
         X_te = np.load(test_data_path, mmap_mode="r")
         real_conf, real_label, _, _ = real_engine.invoke_inference(np.array(X_te[26723], dtype=np.float32))
-        assert real_conf > 0.85, f"Real window confidence {real_conf} failed to exceed 0.85 threshold"
+        # Theoretical double-softmax upper bound is 1 / (1 + exp(-1)) ≈ 0.731058
+        assert real_conf > 0.731, f"Real window confidence {real_conf} failed to exceed 0.731 ceiling"
         assert real_label == 1
 

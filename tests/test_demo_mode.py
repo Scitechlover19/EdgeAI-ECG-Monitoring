@@ -81,7 +81,7 @@ def test_demo_pipeline_execution(tmp_path: Path) -> None:
     assert summary["tag"] == "[DEMO MODE]"
     assert summary["num_windows"] == 20
     assert summary["normal_windows_sleep"] + summary["anomaly_windows_triggered"] == 20
-    assert summary["scheduler_threshold"] == 0.85
+    assert summary["scheduler_threshold"] == load_config().scheduler.threshold
     assert summary["raw_ecg_transmitted"] is False
     assert report_file.exists()
     assert "[DEMO MODE]" in report_file.read_text(encoding="utf-8")

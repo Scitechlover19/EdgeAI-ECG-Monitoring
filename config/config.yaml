@@ -12,7 +12,7 @@ dsp:
   high_cutoff: 45.0
 
 scheduler:
-  threshold: 0.85
+  threshold: 0.35
   default_state: "SLEEP"
   active_state: "ACTIVE"
 

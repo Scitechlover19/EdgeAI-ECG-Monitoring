@@ -1,7 +1,8 @@
 # INT8 Post-Training Quantization (PTQ) & Edge Deployment Report (P0-8)
 
-**Date:** 2026-09-19  
+**Date:** 2026-09-20 22:36:11  
 **Deployment Candidate:** Student 1D-CNN (`student_no_kd_model.keras`, 1,538 parameters)  
+**Operating Threshold:** $\tau = 0.35$ (DECISIONS.md #15)  
 **Calibration Dataset:** `data/processed/X_train.npy` (500 representative 200-sample windows, `[MEASURED]`)  
 **Evaluation Dataset:** Held-Out Test Split (`X_test.npy`, 51,992 windows, `[MEASURED]`)
 

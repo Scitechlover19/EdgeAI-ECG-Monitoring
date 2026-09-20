@@ -1,6 +1,6 @@
 # Resource Profiling & Budget Verification Report (P0-14)
 
-**Date:** 2026-09-19 22:18:51  
+**Date:** 2026-09-20 22:36:28  
 **Deployable Artifact:** [`models/student_model_int8.tflite`](file:///models/student_model_int8.tflite)  
 **Execution Environment:** Host PC Edge-AI Simulation Harness (`[SIMULATED]`)  
 **Benchmarked Windows:** 1,000 preprocessed ECG test windows (`[MEASURED]`)
@@ -14,11 +14,11 @@
 
 | Latency Metric | Measured Host-PC Value `[MEASURED]` | Budget Limit (NFR-3) | Compliance Status |
 |---|---|---|---|
-| **Mean Latency** | **0.0344 ms** | < 50.0 ms | **PASS** |
-| **Median Latency** | **0.0314 ms** | < 50.0 ms | **PASS** |
-| **p95 Latency** | **0.0433 ms** | < 50.0 ms | **PASS** |
-| **Minimum Latency** | **0.0295 ms** | < 50.0 ms | **PASS** |
-| **Maximum Latency** | **0.2533 ms** | < 50.0 ms | **PASS** |
+| **Mean Latency** | **0.0600 ms** | < 50.0 ms | **PASS** |
+| **Median Latency** | **0.0550 ms** | < 50.0 ms | **PASS** |
+| **p95 Latency** | **0.0979 ms** | < 50.0 ms | **PASS** |
+| **Minimum Latency** | **0.0506 ms** | < 50.0 ms | **PASS** |
+| **Maximum Latency** | **0.1309 ms** | < 50.0 ms | **PASS** |
 
 ---
 
@@ -55,15 +55,15 @@
 |---|---|---|---|---|
 | **NFR-1** | MCU Peak SRAM Constraint | **15.16 KB** `[ESTIMATED]` | $\le$ 256.0 KB | **PASS** |
 | **NFR-2** | MCU Flash Memory Constraint | **10.96 KB** `[MEASURED]` | $<$ 1.0 MB (1024 KB) | **PASS** |
-| **NFR-3** | Edge Per-Window Latency Constraint | **0.0344 ms** `[MEASURED]` | $<$ 50.0 ms | **PASS** |
+| **NFR-3** | Edge Per-Window Latency Constraint | **0.0600 ms** `[MEASURED]` | $<$ 50.0 ms | **PASS** |
 
 ---
 
 ## 4. Host Benchmark Environment (`[SIMULATED]`)
 
-- **OS Platform:** `Windows-11-10.0.26200-SP0`
-- **CPU Architecture:** `Intel64 Family 6 Model 197 Stepping 2, GenuineIntel`
-- **Python Version:** `3.13.14`
+- **OS Platform:** `Windows-10-10.0.26200-SP0`
+- **CPU Architecture:** `AMD64 Family 25 Model 80 Stepping 0, AuthenticAMD`
+- **Python Version:** `3.10.0`
 - **TensorFlow Version:** `2.21.0`
 
 ---

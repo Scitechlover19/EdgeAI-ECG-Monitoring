@@ -20,8 +20,8 @@ def test_load_default_config() -> None:
     assert config.dsp.low_cutoff == 0.5
     assert config.dsp.high_cutoff == 45.0
 
-    # Scheduler checks (DECISIONS.md #13)
-    assert config.scheduler.threshold == 0.85
+    # Scheduler checks (DECISIONS.md #13, #15)
+    assert config.scheduler.threshold == 0.35
     assert config.scheduler.default_state == "SLEEP"
     assert config.scheduler.active_state == "ACTIVE"
 

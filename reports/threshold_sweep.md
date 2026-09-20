@@ -141,9 +141,24 @@ To drive the deployment decision, this section compares **ONLY INT8 quantized ca
    - **Option 3 (No-KD INT8 @ 0.50):** Delivers **622 detected arrhythmias** ($12.7\times$ more than status quo) with **only 300 false alarms** (~1.2 false alerts per minute, precision 67.5%), offering a much lower alert fatigue profile.
    - **Option 4 (No-KD INT8 @ 0.35):** Captures **1,004 detected arrhythmias** (13.79% recall) while keeping precision at **66.45%** (507 false alarms over 4 hours = ~2.1 false alerts/min), achieving **99.04% bandwidth reduction**.
 
+### 7.1 Key Finding: Asymmetric PTQ Degradation in KD vs. No-KD
+
+Comparing the impact of full-integer INT8 quantization across both candidate architectures at the standard threshold $\tau=0.50$ reveals an important mechanistic divergence:
+
+| Model Candidate | Float32 TP | INT8 TP | Float32 FP | INT8 FP | Float32 Precision | INT8 Precision | Float32 F1 | INT8 F1 |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| **No-KD Student** | 924 | 622 (-32.7%) | 474 | 300 (-36.7%) | 66.09% | 67.46% (+1.37%) | 0.2130 | 0.1517 |
+| **KD Student ($T=6, \alpha=0.5$)** | 1,255 | 1,277 (+1.7%) | 1,175 | 1,902 (+61.9%) | 51.65% | 40.17% (-11.48%) | 0.2585 | 0.2442 |
+
+**Mechanistic Analysis:**
+- **Same PTQ pipeline, same calibration set, opposite failure modes:**
+  - Quantization hurts the **No-KD model** primarily by *losing true positives* ($924 \rightarrow 622$), while false positives actually drop ($474 \rightarrow 300$), preserving a high precision of 67.46%.
+  - Quantization hurts the **KD model** primarily by *inflating false positives* ($1,175 \rightarrow 1,902$, $+61.9\%$) while true positives stay virtually flat ($1,255 \rightarrow 1,277$), collapsing its precision down to 40.17%.
+- **Underlying Cause:** Knowledge distillation with temperature softening produces smoother, less-peaked output probability distributions. These softened logit distributions are inherently more vulnerable to integer rounding under INT8 quantization, which pushes borderline "normal" windows over the detection threshold.
+- **Engineering Significance:** In Float32, KD appeared strictly superior across both recall and F1. However, at the deployable INT8 format, KD's false alarm burden explodes to 474.1 FP/hr (~1 false alert every 7.6 seconds), making it clinically impractical. Evaluating the quantized candidates directly was essential to discovering this trade-off.
+
 ---
 
 ## 8. Visual Trade-off Curves (INT8 Deployed Models)
 
-![ROC and Precision-Recall Curves](reports/threshold_roc_pr.png)
-
+![ROC and Precision-Recall Curves](threshold_roc_pr.png)

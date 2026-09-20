@@ -2,9 +2,9 @@
 
 Controls SLEEP/ACTIVE state transitions based on TinyMLEngine confidence scores.
 Ensures radio state remains SLEEP (OFF) during normal baseline rhythms and transitions to ACTIVE (ON)
-only when anomaly confidence breaches the configured threshold (default 0.85).
+only when anomaly confidence breaches the configured threshold (default 0.35).
 Governed by PRD.md (FR-11, FR-12, SEC-4), Architecture.md §5.5 & §6, AGENTS.md Rule 6,
-and DECISIONS.md #13.
+and DECISIONS.md #13/#15.
 """
 
 from dataclasses import dataclass
@@ -36,13 +36,13 @@ class StateScheduler:
 
     def __init__(
         self,
-        threshold: float = 0.85,
+        threshold: float = 0.35,
         telemetry_callback: Optional[Callable[[int, float, float, int], Any]] = None,
     ) -> None:
         """Initialize StateScheduler.
 
         Args:
-            threshold: Anomaly confidence threshold in [0.0, 1.0] (default 0.85).
+            threshold: Anomaly confidence threshold in [0.0, 1.0] (default 0.35).
             telemetry_callback: Optional callback to SecureTelemetry.transmit_alert on ACTIVE state.
 
         Raises:

@@ -8,6 +8,7 @@ Governed by PRD.md (FR-7, FR-8, NFR-1, NFR-2), Architecture.md §5.3/§5.7, and 
 """
 
 from pathlib import Path
+import time
 from typing import Any, Dict, List, Optional, Tuple
 import numpy as np
 import tensorflow as tf
@@ -46,6 +47,22 @@ def create_representative_dataset_generator(
     return _generator
 
 
+def _load_keras_student_safely(student_model_path: Path) -> tf.keras.Model:
+    """Load Student Keras model, falling back to architecture re-build and zip weight extraction if needed."""
+    try:
+        return tf.keras.models.load_model(student_model_path, compile=False)
+    except Exception:
+        import tempfile, zipfile
+        from src.models.student import build_student_model
+        student_model = build_student_model(input_shape=(200, 1), num_classes=2, seed=42)
+        with zipfile.ZipFile(student_model_path, "r") as z:
+            with tempfile.NamedTemporaryFile(suffix=".weights.h5", delete=False) as tmp:
+                tmp.write(z.read("model.weights.h5"))
+                tmp_path = tmp.name
+        student_model.load_weights(tmp_path)
+        return student_model
+
+
 def quantize_student_model(
     student_model_path: Path,
     train_data_path: Path,
@@ -69,17 +86,7 @@ def quantize_student_model(
         raise FileNotFoundError(f"Student Keras model checkpoint not found at {student_model_path}")
 
     logger.info(f"Loading trained Student Keras model from {student_model_path}...")
-    try:
-        student_model = tf.keras.models.load_model(student_model_path, compile=False)
-    except Exception:
-        import tempfile, zipfile
-        from src.models.student import build_student_model
-        student_model = build_student_model(input_shape=(200, 1), num_classes=2, seed=42)
-        with zipfile.ZipFile(student_model_path, "r") as z:
-            with tempfile.NamedTemporaryFile(suffix=".weights.h5", delete=False) as tmp:
-                tmp.write(z.read("model.weights.h5"))
-                tmp_path = tmp.name
-        student_model.load_weights(tmp_path)
+    student_model = _load_keras_student_safely(student_model_path)
 
     logger.info(
         f"Creating representative dataset generator using {num_calibration_samples} samples from {train_data_path}..."
@@ -167,7 +174,7 @@ def evaluate_quantized_pipeline(
 
     # Step 3: Evaluate Float32 Student baseline
     logger.info("Evaluating Float32 Student model on held-out test split...")
-    float32_student = tf.keras.models.load_model(student_path, compile=False)
+    float32_student = _load_keras_student_safely(student_path)
     float32_probs = float32_student.predict(X_test_in, batch_size=256, verbose=0)
     m_float32 = compute_binary_metrics(y_test, float32_probs)
 
@@ -214,8 +221,9 @@ def evaluate_quantized_pipeline(
     # Step 6: Generate reports/quantization_report.md
     report_content = rf"""# INT8 Post-Training Quantization (PTQ) & Edge Deployment Report (P0-8)
 
-**Date:** 2026-09-19  
+**Date:** {time.strftime('%Y-%m-%d %H:%M:%S')}  
 **Deployment Candidate:** Student 1D-CNN (`student_no_kd_model.keras`, 1,538 parameters)  
+**Operating Threshold:** $\tau = 0.35$ (DECISIONS.md #15)  
 **Calibration Dataset:** `data/processed/X_train.npy` (500 representative 200-sample windows, `[MEASURED]`)  
 **Evaluation Dataset:** Held-Out Test Split (`X_test.npy`, 51,992 windows, `[MEASURED]`)
 

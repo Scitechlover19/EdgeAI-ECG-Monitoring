@@ -153,23 +153,45 @@ implementation decisions are kept in separate documents so the two are never con
 - `DEMO MODE` output must never be mixed into, or presented as, official MIT-BIH experimental
   results. Every report/log line produced in `DEMO MODE` is prefixed/tagged accordingly.
 
+## Decision 15 — Deployed Model Selection & Scheduler Operating Threshold
+**IMPLEMENTATION DECISION — RESOLVES EMPIRICAL THRESHOLD & QUANTIZATION ABLATION**
+
+- **Deployed Model:** Student (No KD) INT8 (`models/student_model_int8.tflite`, 11,224 bytes).
+- **Rejection of Knowledge Distillation Model for INT8 Deployment:**
+  Although the validation-selected Knowledge Distillation model ($T=6.0, \alpha=0.5$) achieved superior Float32 test recall (17.24% vs. 12.70%) and F1 score (0.2585 vs. 0.2130), empirical evaluation of the full-integer INT8 quantized models (Table C vs. Table D in `reports/threshold_sweep.md`) revealed an asymmetric degradation under Post-Training Quantization (PTQ):
+  - In the **No-KD model**, INT8 quantization degrades gracefully by losing true positives ($924 \rightarrow 622$ TP, $-32.7\%$) while reducing false positives ($474 \rightarrow 300$ FP, $-36.7\%$), preserving a high precision of **67.46%** at $\tau=0.50$.
+  - In the **KD model**, INT8 quantization inflates false positives by $+61.9\%$ ($1,175 \rightarrow 1,902$ FP at $\tau=0.50$) while true positives remain roughly flat ($1,255 \rightarrow 1,277$). The temperature-softened probability distribution produced by KD makes borderline normal windows highly sensitive to integer rounding under INT8 quantization.
+  - While KD INT8 detects more anomalies, its false alarm burden ($1,902$ FPs over 4.01 hours $\approx 474.1$ false alarms/hour, or one false alert every 7.6 seconds) introduces severe clinical alert fatigue that would be unacceptable in real-world patient monitoring.
+- **Operating Threshold Selection ($\tau = 0.35$, was 0.85):**
+  - **Failure of $\tau = 0.85$ Baseline:** At the initial 0.85 threshold, No-KD INT8 detected only 49 of 7,278 test anomalies (**0.67% recall**), starving clinical detection to achieve 99.91% bandwidth reduction.
+  - **Selection of $\tau = 0.35$:** At $\tau = 0.35$, No-KD INT8 achieves **13.79% recall** ($1,004$ true positive arrhythmias detected — a **$20.5\times$ increase** over the 49 detected at 0.85) while maintaining **66.45% precision** (2 out of 3 alerts are true anomalies), limiting false alarms to **126.4 FPs/hour** (507 FPs over 4.01 hours, or ~2.1 false alarms/minute).
+  - **Bandwidth Compliance:** With 1,511 total active transmissions (2.91% trigger rate), transmitted telemetry is **199,799 bytes** versus a 20,796,800 bytes baseline, delivering an empirical **99.04% network payload reduction**, easily exceeding the 90.0% NFR-6 ceiling by $+9.04\%$.
+  - **Explicit Rejection of Alternative INT8 Candidates:**
+    - Candidate 2 (KD INT8 @ 0.35, 27.29% recall): Rejected due to extreme alert burden (**612.2 FPs/hour**, 2,456 false alarms over 4 hours, or one false alert every 5.9 seconds).
+    - Option 1 (KD INT8 @ 0.50, 17.55% recall): Rejected due to excessive alert burden (**474.1 FPs/hour**, 1,902 false alarms).
+    - Option 3 (No-KD INT8 @ 0.50, 8.55% recall): Rejected because $\tau=0.35$ increases detected anomalies by $+61.4\%$ ($1,004$ vs. $622$ TP) with negligible precision penalty (66.45% vs. 67.46%) while still achieving 99.04% reduction.
+- **Known Architectural Limitations & Future Work:**
+  An absolute recall of 13.79% (or 27.29% in KD) reflects the capacity limit of a 1,538-parameter Student model under severe class imbalance (14.0% prevalence). This proof-of-concept establishes that edge filtering and secure telemetry deliver >99% bandwidth reduction without raw ECG leakage. Improving absolute minority sensitivity (e.g., patient-adaptive thresholding, focal loss, or recurrent micro-architectures) is explicitly designated as future work.
+
 ---
 
 ## Summary Table
 
 | Decision | Selected Approach | Source | Status |
 |---|---|---|---|
-| 1. ECG Windowing | 200-sample windows, 50% overlap, per-record actual sampling frequency | IMPLEMENTATION DECISION | Not yet built |
-| 2. DSP Filter | 4th-order Butterworth bandpass, 0.5–45 Hz, `scipy.signal`, configurable | IMPLEMENTATION DECISION | Not yet built |
-| 3. Data Splitting | Patient/record-independent split, seed + split recorded in manifest | IMPLEMENTATION DECISION | Not yet built |
-| 4. Teacher Model | Moderately sized 1D-CNN (not Transformer) | IMPLEMENTATION DECISION | Not yet built |
-| 5. Student Model | Compact 1D-CNN, GAP, small dense head, size set by measured params | IMPLEMENTATION DECISION | Not yet built |
-| 6. Knowledge Distillation | Soft-target KD, T=3.0, alpha=0.7 (configurable); KD-vs-no-KD experiment required | IMPLEMENTATION DECISION | Not yet built |
-| 7. INT8 Quantization | TFLite full-integer PTQ, real representative dataset, verification checklist | IMPLEMENTATION DECISION | Not yet built |
-| 8. Encryption | AES-GCM via Python `cryptography` library, simulation only | IMPLEMENTATION DECISION | Not yet built |
-| 9. Network Sink | In-memory sink, fixed record schema, never receives raw ECG | IMPLEMENTATION DECISION | Not yet built |
-| 10. Latency | `time.perf_counter()`, mean/median/p95/min/max, benchmark machine logged | IMPLEMENTATION DECISION | Not yet built — will be MEASURED LATER |
-| 11. SRAM | Model/tensor-based estimate, never process RSS, headroom vs. 256 KB reported | IMPLEMENTATION DECISION | Not yet built — will be MEASURED LATER |
-| 12. Flash | Actual `.tflite` byte size; overhead reported separately if it exists | IMPLEMENTATION DECISION | Not yet built — will be MEASURED LATER |
-| 13. Anomaly Scheduler | SLEEP/ACTIVE states, threshold 0.85 configurable, all transitions logged | IMPLEMENTATION DECISION | Not yet built |
-| 14. Demo Mode | Synthetic-data fallback, clearly tagged, never mixed with real results | IMPLEMENTATION DECISION | Not yet built |
+| 1. ECG Windowing | 200-sample windows, 50% overlap, per-record actual sampling frequency | IMPLEMENTATION DECISION | Built & Verified |
+| 2. DSP Filter | 4th-order Butterworth bandpass, 0.5–45 Hz, `scipy.signal`, configurable | IMPLEMENTATION DECISION | Built & Verified |
+| 3. Data Splitting | Patient/record-independent split, seed + split recorded in manifest | IMPLEMENTATION DECISION | Built & Verified |
+| 4. Teacher Model | Moderately sized 1D-CNN (not Transformer) | IMPLEMENTATION DECISION | Built & Verified |
+| 5. Student Model | Compact 1D-CNN, GAP, small dense head, size set by measured params | IMPLEMENTATION DECISION | Built & Verified |
+| 6. Knowledge Distillation | Soft-target KD, validation-selected $T=6.0, \alpha=0.5$; ablation recorded | IMPLEMENTATION DECISION | Built & Verified |
+| 7. INT8 Quantization | TFLite full-integer PTQ, real representative dataset, verification checklist | IMPLEMENTATION DECISION | Built & Verified |
+| 8. Encryption | AES-GCM via Python `cryptography` library, simulation only | IMPLEMENTATION DECISION | Built & Verified |
+| 9. Network Sink | In-memory sink, fixed record schema, never receives raw ECG | IMPLEMENTATION DECISION | Built & Verified |
+| 10. Latency | `time.perf_counter()`, mean/median/p95/min/max, benchmark machine logged | IMPLEMENTATION DECISION | Measured (0.0344 ms mean) |
+| 11. SRAM | Model/tensor-based estimate, never process RSS, headroom vs. 256 KB reported | IMPLEMENTATION DECISION | Estimated (15.16 KB peak) |
+| 12. Flash | Actual `.tflite` byte size; overhead reported separately if it exists | IMPLEMENTATION DECISION | Measured (10.96 KB) |
+| 13. Anomaly Scheduler | SLEEP/ACTIVE states, threshold 0.85 initial, all transitions logged | IMPLEMENTATION DECISION | Superseded by #15 |
+| 14. Demo Mode | Synthetic-data fallback, clearly tagged, never mixed with real results | IMPLEMENTATION DECISION | Built & Verified |
+| 15. Deployed Model & Threshold | Student No-KD INT8, threshold $\tau=0.35$ (13.79% recall, 66.45% precision, 99.04% bandwidth reduction) | IMPLEMENTATION DECISION | Finalized & Deployed |
+
