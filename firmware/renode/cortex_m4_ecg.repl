@@ -1,0 +1,18 @@
+// Renode Platform Description: ARM Cortex-M4 EdgeAI ECG Node
+// Matches Review-1 and PRD.md resource specifications:
+// - CPU: ARM Cortex-M4
+// - SRAM: 256 KB (0x00040000 bytes at 0x20000000)
+// - Flash: 1 MB (0x00100000 bytes at 0x08000000)
+// - UART: sysbus.uart (for real-time telemetry log analyzer)
+
+cpu: CPU.CortexM @ sysbus
+    cpuType: "cortex-m4"
+
+sram: Memory.MappedMemory @ sysbus 0x20000000
+    size: 0x00040000 // 256 KB SRAM
+
+flash: Memory.MappedMemory @ sysbus 0x08000000
+    size: 0x00100000 // 1024 KB (1 MB) Flash
+
+uart: UART.STM32_UART @ sysbus 0x40011000
+    -> cpu@37

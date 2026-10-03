@@ -42,7 +42,15 @@ data/mitbih/
 # Generated local run artifacts & scratch logs
 reports/demo/
 *.log
+*.log*
 scratch/
+
+# Embedded firmware build artifacts & installers
+firmware/build/
+*.elf
+*.bin
+arm-toolchain-installer.exe
+*.exe
 .system_generated/
 
 # Jupyter Notebook checkpoints

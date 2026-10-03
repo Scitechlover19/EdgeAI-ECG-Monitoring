@@ -1,0 +1,30 @@
+# Renode Script: Run EdgeAI ECG Cortex-M4 Firmware
+# Execute in Renode monitor via:
+#   s @d:/Project/EdgeAI-ECG-Monitoring/firmware/renode/simulate.resc
+
+# Clear any previous emulation state so the script is idempotent
+Clear
+
+using sysbus
+mach create "EdgeAI_ECG_Node"
+
+# Load STM32 Cortex-M4 Platform (Cortex-M4 + FPU + NVIC + 256 KB SRAM + USART1)
+machine LoadPlatformDescription @platforms/cpus/stm32f4.repl
+
+# Open live UART Terminal Analyzer window
+showAnalyzer usart1
+
+# Firmware ELF binary path
+$bin = @d:/Project/EdgeAI-ECG-Monitoring/firmware/build/firmware.elf
+
+# Load ELF into Cortex-M4 memory
+sysbus LoadELF $bin
+
+echo "=========================================================="
+echo " EdgeAI ECG Firmware Loaded into Cortex-M4 Emulated MCU   "
+echo " SRAM: 256 KB | Flash: 1 MB | Clock: Real-Time Virtual    "
+echo " Model: Quantized INT8 Student Model (student_model_int8) "
+echo " Starting execution...                                    "
+echo "=========================================================="
+
+start
