@@ -160,14 +160,14 @@ export default function Hero() {
         <div className="flex flex-wrap items-center gap-2.5 text-xs text-steel mb-6">
           <span className="inline-flex items-center gap-1.5 rounded bg-surface px-2.5 py-1 border border-steel/20 font-numeric">
             <Cpu className="h-3.5 w-3.5 text-steel" />
-            256 KB SRAM Limit
+            256 KB SRAM Ceiling (5.4 KB Arena)
           </span>
           <span className="inline-flex items-center gap-1.5 rounded bg-surface px-2.5 py-1 border border-steel/20 font-numeric">
             <Lock className="h-3.5 w-3.5 text-signal" />
             Zero Raw Waveform Transmission
           </span>
           <span className="inline-flex items-center gap-1.5 rounded bg-surface px-2.5 py-1 border border-steel/20 font-numeric">
-            MIT-BIH Arrhythmia Dataset
+            MIT-BIH + SVDB + INCART Validated
           </span>
         </div>
 
@@ -178,8 +178,8 @@ export default function Hero() {
           </h1>
           <p className="text-lg md:text-xl text-ink/75 leading-relaxed">
             An edge-AI cardiac monitoring pipeline that filters 99% of normal rhythms directly on-device,
-            waking its radio transceiver only when verified arrhythmias occur — solving continuous telemetry power
-            drain and eliminating biological waveform privacy exposure.
+            waking its radio transceiver only when verified arrhythmias occur — achieving 79.28% sensitivity on
+            MIT-BIH and 86.43% on external cohorts while preserving 99.04% wireless bandwidth.
           </p>
           <div className="mt-8 flex flex-wrap items-center gap-4">
             <a
@@ -221,7 +221,7 @@ export default function Hero() {
 
             <div className="flex items-center gap-4 text-xs font-numeric text-steel">
               <div>
-                Threshold <span className="text-ink font-medium">τ = 0.35</span>
+                Threshold <span className="text-ink font-medium">τ* = 0.52</span>
               </div>
               <div>
                 Score{" "}
@@ -257,7 +257,7 @@ export default function Hero() {
             </div>
 
             <div className="absolute top-3 right-3 text-[11px] font-numeric text-steel/75 bg-surface/75 px-2 py-0.5 rounded border border-steel/10">
-              200-sample sliding window · 360 Hz
+              Beat-centred window + Causal RR context · 360 Hz
             </div>
           </div>
 

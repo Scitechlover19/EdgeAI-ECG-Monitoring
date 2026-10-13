@@ -35,6 +35,8 @@ ehthumbs.db
 # MIT-BIH raw dataset / generated binary partitions
 data/raw/
 data/processed/
+data/processed_beats/
+data/processed_beats_causal/
 data/mitbih/
 *.tar.gz
 *.zip

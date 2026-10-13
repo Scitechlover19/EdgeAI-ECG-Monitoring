@@ -1,16 +1,23 @@
 {
-  "dataset_split": "Held-Out Test Split (51,992 windows across 8 patient records)",
+  "dataset_split": "Held-Out Test Split (17,729 beats across 8 patient records) + External Validation (17,591 beats across 7 records)",
   "canonical_operating_point": {
-    "model": "Student (No KD) INT8",
-    "threshold": 0.35,
-    "recall_percent": 13.79,
-    "precision_percent": 66.45,
+    "model": "Dual-Branch Waveform + Causal RR INT8 TinyML",
+    "threshold": 0.52,
+    "recall_percent": 79.28,
+    "precision_percent": 62.56,
+    "specificity_percent": 96.15,
+    "accuracy_percent": 94.88,
+    "f1_score": 0.6993,
     "bandwidth_reduction_percent": 99.04,
-    "false_alarms_per_hour": 126.4,
-    "true_positives": 1004,
-    "false_positives": 507,
-    "total_transmissions": 1511,
-    "bytes_transmitted": 198791
+    "false_alarms_per_hour": 5.24,
+    "true_positives": 1056,
+    "false_positives": 632,
+    "false_negatives": 276,
+    "true_negatives": 15765,
+    "total_evaluated_beats": 17729,
+    "external_cohort_recall": 86.43,
+    "external_cohort_veb_recall": 91.34,
+    "external_cohort_fp_per_hr": 11.71
   },
   "no_kd_int8": [
     {

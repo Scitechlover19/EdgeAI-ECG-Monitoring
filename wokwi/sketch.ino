@@ -21,14 +21,14 @@
 #define TARGET_MCU             "ARM Cortex-M / STM32"
 #define SRAM_CEILING_KB        256
 #define FLASH_CEILING_KB       1024
-#define MODEL_SIZE_BYTES       11224   // Exact INT8 Student Model size [MEASURED]
-#define SIMULATED_ARENA_KB     15.16f  // Tensor Arena SRAM [SIMULATED]
+#define MODEL_SIZE_BYTES       13216   // Exact Dual-Branch INT8 Model size (12.91 KiB) [MEASURED]
+#define SIMULATED_ARENA_KB     5.4f    // Required Tensor Arena SRAM [SIMULATED]
 
 #define SAMPLE_RATE_HZ         360
 #define WINDOW_SIZE            200     // 200 samples = ~0.556s window
 #define WINDOW_HOP             100     // 50% overlap
 
-#define SCHEDULER_THRESHOLD    0.35f   // Anomaly trigger threshold
+#define SCHEDULER_THRESHOLD    0.52f   // Reconciled F1-optimal anomaly trigger threshold
 #define RECOVERY_BEATS         5       // Consecutive normal beats to return to SLEEP
 
 // System States

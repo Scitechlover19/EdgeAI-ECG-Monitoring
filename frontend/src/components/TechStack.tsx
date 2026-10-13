@@ -28,22 +28,21 @@ export default function TechStack() {
             </div>
             <ul className="space-y-3 text-xs text-ink/80 leading-relaxed font-numeric">
               <li className="flex flex-col">
-                <span className="font-semibold text-ink">Student 1D-CNN (1,538 Parameters)</span>
+                <span className="font-semibold text-ink">Dual-Branch 1D-CNN (1,698 Parameters)</span>
                 <span className="text-steel">
-                  2× Conv1D (kernel size 5) + BatchNorm + ReLU + Global Average Pooling + Dense. 10.96 KB flatbuffer size.
+                  Fuses beat waveform morphology (1D-CNN branch) with causal rhythm context [RR_pre, RR_ratio, RR_var] (Dense branch). 12.91 KB FlatBuffer.
                 </span>
               </li>
               <li className="flex flex-col">
-                <span className="font-semibold text-ink">Teacher 1D-CNN (120,674 Parameters)</span>
+                <span className="font-semibold text-ink">Full-Integer INT8 PTQ (TFLite Micro)</span>
                 <span className="text-steel">
-                  4-stage deep convolutional model (472 KB) trained to 90.96% test accuracy for knowledge distillation.
+                  Quantized with representative training set calibration. Runs in 5.4 KB SRAM tensor arena with 1.8 ms Cortex-M4 latency.
                 </span>
               </li>
               <li className="flex flex-col">
-                <span className="font-semibold text-ink">Full-Integer INT8 PTQ (TFLite)</span>
+                <span className="font-semibold text-ink">Strict Patient-Independent Distillation</span>
                 <span className="text-steel">
-                  Quantized with 500 representative calibration samples from X_train.npy. Preserves accuracy within 0.26%
-                  of Float32 baseline.
+                  Trained on subject-partitioned records (subject 201/202 grouped). Eliminates inter-patient data leakage.
                 </span>
               </li>
             </ul>
@@ -53,25 +52,25 @@ export default function TechStack() {
           <div className="rounded-sm border border-steel/20 bg-surface p-6 shadow-xs">
             <div className="flex items-center gap-2.5 mb-4 text-steel">
               <Sliders className="h-4 w-4 text-signal" />
-              <h3 className="text-base font-semibold text-ink">DSP Preprocessing & Dataset Splitting</h3>
+              <h3 className="text-base font-semibold text-ink">DSP Preprocessing & Multi-Database Cohort</h3>
             </div>
             <ul className="space-y-3 text-xs text-ink/80 leading-relaxed font-numeric">
               <li className="flex flex-col">
-                <span className="font-semibold text-ink">PhysioNet MIT-BIH Arrhythmia Database</span>
+                <span className="font-semibold text-ink">Causal Pan-Tompkins QRS Peak Detector</span>
                 <span className="text-steel">
-                  48 full patient records (311,952 total 200-sample windows). Real clinical ECG annotated by cardiologists.
+                  97.75% sensitivity & 99.40% PPV on MIT-BIH; 98.77% sensitivity on external cohort with 25-sample (69.4 ms) confirmation window.
                 </span>
               </li>
               <li className="flex flex-col">
-                <span className="font-semibold text-ink">Patient-Independent Split Strategy</span>
+                <span className="font-semibold text-ink">Multi-Database Validation (MIT-BIH + SVDB + INCART)</span>
                 <span className="text-steel">
-                  Strict 33 train / 7 val / 8 test patient-record partitioning. Zero patient overlap across splits.
+                  Validated across 4.01h of MIT-BIH (360 Hz) and 3.5h of external data (SVDB @ 128 Hz, INCART @ 257 Hz) via causal polyphase resampling.
                 </span>
               </li>
               <li className="flex flex-col">
-                <span className="font-semibold text-ink">4th-Order Butterworth Bandpass (0.5 – 45.0 Hz)</span>
+                <span className="font-semibold text-ink">Forward-Only 4th-Order Butterworth Bandpass</span>
                 <span className="text-steel">
-                  Zero-phase filtering via SciPy signal processing + mean subtraction and Z-score standardization.
+                  0.5 Hz – 45.0 Hz passband with 0 samples lookahead. Running in-place Z-score normalization.
                 </span>
               </li>
             </ul>
@@ -85,23 +84,21 @@ export default function TechStack() {
             </div>
             <ul className="space-y-3 text-xs text-ink/80 leading-relaxed font-numeric">
               <li className="flex flex-col">
-                <span className="font-semibold text-ink">VirtualMCU Simulation Harness</span>
+                <span className="font-semibold text-ink">Hysteresis State Scheduler (τ* = 0.52)</span>
                 <span className="text-steel">
-                  Enforces strict hardware ceilings: ≤ 256 KB SRAM, &lt; 1.0 MB Flash, &lt; 50 ms latency. RSS RAM is never
-                  conflated with MCU SRAM.
+                  5-beat recovery timer lockout prevents radio thrashing, bounding false alarms to 5.24 ep/hr (MIT-BIH) and 11.71 ep/hr (External).
                 </span>
               </li>
               <li className="flex flex-col">
-                <span className="font-semibold text-ink">StateScheduler (SLEEP / ACTIVE)</span>
+                <span className="font-semibold text-ink">Hardware Emulation (Renode + Wokwi)</span>
                 <span className="text-steel">
-                  Radio duty cycle state machine calibrated at τ = 0.35. Keeps transceiver powered down for 97.09% of test
-                  duration.
+                  Verified in Antmicro Renode 1.17.0 (STM32F4 Cortex-M4) and Wokwi (ESP32 with I2C OLED & NeoPixel).
                 </span>
               </li>
               <li className="flex flex-col">
-                <span className="font-semibold text-ink">C++ Header Firmware Model Export</span>
+                <span className="font-semibold text-ink">Deterministic Flash & SRAM Footprint</span>
                 <span className="text-steel">
-                  Exports canonical models/student_model_int8.h byte array (11,224 bytes) for embedded C/C++ compilation.
+                  12.91 KB Flash model (~82 KB firmware, 8.0% of 1 MB) and 5.4 KB SRAM arena (2.1% of 256 KB).
                 </span>
               </li>
             </ul>

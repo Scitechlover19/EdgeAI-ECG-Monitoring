@@ -25,8 +25,8 @@ Go to [wokwi.com](https://wokwi.com) and click **ESP32** (or **STM32**).
 1. **Hardware Verification Header**:
    - MCU SRAM Ceiling: `256 KB`
    - MCU Flash Ceiling: `1024 KB (1 MB)`
-   - Measured INT8 Model Size: `11,224 bytes (10.96 KB)` $\rightarrow$ **1.07% Flash utilization**
-   - Simulated Tensor Arena: `15.16 KB` $\rightarrow$ **5.92% SRAM utilization**
+   - Measured INT8 Model Size: `13,216 bytes (12.91 KB)` $\rightarrow$ **1.26% Flash utilization**
+   - Simulated Tensor Arena: `5.4 KB` $\rightarrow$ **2.11% SRAM utilization** (Operating Threshold: $\tau^* = 0.52$)
 2. **Real-Time Heartbeat LED**:
    - The onboard virtual LED flashes brief pulses on every normal sinus beat.
    - When an arrhythmia occurs (Windows 5–7), the LED turns **solid ON**!

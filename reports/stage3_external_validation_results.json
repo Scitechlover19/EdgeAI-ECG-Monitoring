@@ -1,0 +1,271 @@
+{
+  "metadata": {
+    "dataset_name": "MIT-BIH SVDB (800-806) + St Petersburg INCART (I01)",
+    "records": [
+      "800",
+      "801",
+      "802",
+      "804",
+      "805",
+      "806",
+      "I01"
+    ],
+    "total_hours": 3.5,
+    "frozen_model": "models/student_dual_branch_int8.tflite",
+    "causality": "Strict Forward IIR + Causal QRS Peak Detection (Zero Lookahead)"
+  },
+  "qrs_detection": {
+    "800": {
+      "ref_beats": 1921,
+      "detected_peaks": 1913,
+      "tp": 1888,
+      "fp": 25,
+      "fn": 33,
+      "sensitivity": 98.2821447162936,
+      "ppv": 98.69315211709358,
+      "fp_per_min": 0.8333333333333334
+    },
+    "801": {
+      "ref_beats": 2577,
+      "detected_peaks": 2707,
+      "tp": 2506,
+      "fp": 201,
+      "fn": 71,
+      "sensitivity": 97.24485836243694,
+      "ppv": 92.5748060583672,
+      "fp_per_min": 6.7
+    },
+    "802": {
+      "ref_beats": 1679,
+      "detected_peaks": 1674,
+      "tp": 1673,
+      "fp": 1,
+      "fn": 6,
+      "sensitivity": 99.64264443120905,
+      "ppv": 99.94026284348865,
+      "fp_per_min": 0.03333333333333333
+    },
+    "804": {
+      "ref_beats": 2888,
+      "detected_peaks": 2835,
+      "tp": 2834,
+      "fp": 1,
+      "fn": 54,
+      "sensitivity": 98.13019390581718,
+      "ppv": 99.96472663139329,
+      "fp_per_min": 0.03333333333333333
+    },
+    "805": {
+      "ref_beats": 2418,
+      "detected_peaks": 2469,
+      "tp": 2406,
+      "fp": 63,
+      "fn": 12,
+      "sensitivity": 99.50372208436724,
+      "ppv": 97.44835965978129,
+      "fp_per_min": 2.1
+    },
+    "806": {
+      "ref_beats": 3023,
+      "detected_peaks": 3023,
+      "tp": 3023,
+      "fp": 0,
+      "fn": 0,
+      "sensitivity": 100.0,
+      "ppv": 100.0,
+      "fp_per_min": 0.0
+    },
+    "I01": {
+      "ref_beats": 2757,
+      "detected_peaks": 2976,
+      "tp": 2720,
+      "fp": 256,
+      "fn": 37,
+      "sensitivity": 98.65796155241205,
+      "ppv": 91.39784946236558,
+      "fp_per_min": 8.533333333333333
+    }
+  },
+  "qrs_aggregate": {
+    "ref_beats": 17263,
+    "detected_peaks": 17597,
+    "tp": 17050,
+    "fp": 547,
+    "fn": 213,
+    "sensitivity": 98.76614725134681,
+    "ppv": 96.89151559924987,
+    "fp_per_min": 2.604761904761905
+  },
+  "classification_results": {
+    "tau_0.52": {
+      "threshold": 0.52,
+      "total_beats_evaluated": 17591,
+      "target_arrhythmias": 1259,
+      "detected_arrhythmias": 1083,
+      "sensitivity": 86.43256185155627,
+      "specificity": 88.65834251438365,
+      "precision_ppv": 36.88692098092643,
+      "accuracy": 88.49980103461998,
+      "f1_score": 0.5170685127715445,
+      "veb_sensitivity": 91.33928571428571,
+      "sveb_sensitivity": 44.11764705882353,
+      "veb_counts": "1023 / 1120",
+      "sveb_counts": "60 / 136",
+      "tp": 1083,
+      "fn": 170,
+      "fp": 1853,
+      "tn": 14485,
+      "false_alarm_episodes": 41,
+      "false_alarm_episodes_hr": 11.714285714285714,
+      "fp_symbol_breakdown": {
+        "?": 506,
+        "N": 1230,
+        "|": 115,
+        "~": 2
+      },
+      "per_record": {
+        "800": {
+          "target_ref": 37,
+          "detected": 4,
+          "sensitivity": 10.81081081081081,
+          "alerts": 37,
+          "fp_beats": 33,
+          "false_episodes": 15
+        },
+        "801": {
+          "target_ref": 334,
+          "detected": 327,
+          "sensitivity": 97.90419161676647,
+          "alerts": 939,
+          "fp_beats": 612,
+          "false_episodes": 14
+        },
+        "802": {
+          "target_ref": 85,
+          "detected": 32,
+          "sensitivity": 37.64705882352941,
+          "alerts": 39,
+          "fp_beats": 7,
+          "false_episodes": 1
+        },
+        "804": {
+          "target_ref": 181,
+          "detected": 172,
+          "sensitivity": 95.02762430939227,
+          "alerts": 195,
+          "fp_beats": 23,
+          "false_episodes": 6
+        },
+        "805": {
+          "target_ref": 207,
+          "detected": 206,
+          "sensitivity": 99.51690821256038,
+          "alerts": 619,
+          "fp_beats": 413,
+          "false_episodes": 1
+        },
+        "806": {
+          "target_ref": 71,
+          "detected": 2,
+          "sensitivity": 2.8169014084507045,
+          "alerts": 2,
+          "fp_beats": 0,
+          "false_episodes": 0
+        },
+        "I01": {
+          "target_ref": 344,
+          "detected": 340,
+          "sensitivity": 98.83720930232558,
+          "alerts": 1105,
+          "fp_beats": 765,
+          "false_episodes": 4
+        }
+      }
+    },
+    "tau_0.48": {
+      "threshold": 0.48,
+      "total_beats_evaluated": 17591,
+      "target_arrhythmias": 1259,
+      "detected_arrhythmias": 1089,
+      "sensitivity": 86.91141260973663,
+      "specificity": 84.96143958868895,
+      "precision_ppv": 30.710659898477154,
+      "accuracy": 85.10033539878347,
+      "f1_score": 0.4538445509481141,
+      "veb_sensitivity": 91.60714285714285,
+      "sveb_sensitivity": 46.32352941176471,
+      "veb_counts": "1026 / 1120",
+      "sveb_counts": "63 / 136",
+      "tp": 1089,
+      "fn": 164,
+      "fp": 2457,
+      "tn": 13881,
+      "false_alarm_episodes": 50,
+      "false_alarm_episodes_hr": 14.285714285714286,
+      "fp_symbol_breakdown": {
+        "?": 515,
+        "N": 1824,
+        "|": 116,
+        "~": 2
+      },
+      "per_record": {
+        "800": {
+          "target_ref": 37,
+          "detected": 4,
+          "sensitivity": 10.81081081081081,
+          "alerts": 43,
+          "fp_beats": 39,
+          "false_episodes": 15
+        },
+        "801": {
+          "target_ref": 334,
+          "detected": 330,
+          "sensitivity": 98.80239520958084,
+          "alerts": 1141,
+          "fp_beats": 811,
+          "false_episodes": 10
+        },
+        "802": {
+          "target_ref": 85,
+          "detected": 34,
+          "sensitivity": 40.0,
+          "alerts": 51,
+          "fp_beats": 17,
+          "false_episodes": 2
+        },
+        "804": {
+          "target_ref": 181,
+          "detected": 173,
+          "sensitivity": 95.58011049723757,
+          "alerts": 262,
+          "fp_beats": 89,
+          "false_episodes": 18
+        },
+        "805": {
+          "target_ref": 207,
+          "detected": 206,
+          "sensitivity": 99.51690821256038,
+          "alerts": 716,
+          "fp_beats": 510,
+          "false_episodes": 1
+        },
+        "806": {
+          "target_ref": 71,
+          "detected": 2,
+          "sensitivity": 2.8169014084507045,
+          "alerts": 2,
+          "fp_beats": 0,
+          "false_episodes": 0
+        },
+        "I01": {
+          "target_ref": 344,
+          "detected": 340,
+          "sensitivity": 98.83720930232558,
+          "alerts": 1331,
+          "fp_beats": 991,
+          "false_episodes": 4
+        }
+      }
+    }
+  }
+}

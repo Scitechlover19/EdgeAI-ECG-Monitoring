@@ -5,7 +5,7 @@ baseline wander removal, and z-score amplitude normalization.
 Governed by PRD.md (FR-3, FR-4), Architecture.md §5.2, and DECISIONS.md #2.
 """
 
-from typing import Optional, Union
+from typing import Optional, Union, Tuple
 import numpy as np
 from scipy.signal import butter, sosfiltfilt, medfilt
 
@@ -105,6 +105,35 @@ class DSPFilter:
             return filtered.astype(np.float32)
         except Exception as err:
             raise DSPFilterError(f"Error applying bandpass filter: {err}") from err
+
+    def apply_bandpass_causal(
+        self, window: np.ndarray, zi: Optional[np.ndarray] = None
+    ) -> Tuple[np.ndarray, np.ndarray]:
+        """Apply strictly causal forward-only IIR Butterworth filter (zero future lookahead).
+
+        Args:
+            window: 1D float numpy array representing incoming streaming ECG samples.
+            zi: Optional initial filter delay-line states (Second-Order Sections).
+
+        Returns:
+            Tuple of (filtered_window: 1D float32 array, updated_zi: delay-line states).
+        """
+        if not isinstance(window, np.ndarray) or window.ndim != 1:
+            raise DSPFilterError("Input window must be a 1D numpy array.")
+        if len(window) == 0:
+            raise DSPFilterError("Input window is empty.")
+        if np.isnan(window).any() or np.isinf(window).any():
+            raise DSPFilterError("Input window contains NaN or Inf values.")
+
+        try:
+            from scipy.signal import sosfilt, sosfilt_zi
+            if zi is None:
+                zi = sosfilt_zi(self.sos) * window[0] if len(window) > 0 else np.zeros((self.sos.shape[0], 2))
+            filtered, zi_out = sosfilt(self.sos, window, zi=zi)
+            return filtered.astype(np.float32), zi_out
+        except Exception as err:
+            raise DSPFilterError(f"Error applying causal bandpass filter: {err}") from err
+
 
     def remove_baseline_wander(self, window: np.ndarray) -> np.ndarray:
         """Remove low-frequency baseline wander using mean subtraction and median filtering.

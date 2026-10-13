@@ -91,3 +91,38 @@ def test_extract_record_windows_synthetic(tmp_path: Path) -> None:
     assert labels[4] == 1
     # Window index 0 (samples 0..200) contains 'N' beat at sample 100 -> label 0
     assert labels[0] == 0
+
+
+def test_patient_grouped_subject_integrity() -> None:
+    """Verify records 201 and 202 (same subject) never split across partitions on arbitrary seeds."""
+    from src.models.prepare_data import SUBJECT_MAPPING
+    
+    for test_seed in [1, 42, 99, 123, 2024]:
+        train_recs, val_recs, test_recs = perform_record_independent_split(
+            MITDB_RECORDS, train_ratio=0.70, val_ratio=0.15, seed=test_seed
+        )
+        # Check records 201 and 202 are in the same split
+        in_train = ("201" in train_recs) and ("202" in train_recs)
+        in_val = ("201" in val_recs) and ("202" in val_recs)
+        in_test = ("201" in test_recs) and ("202" in test_recs)
+        assert in_train or in_val or in_test, f"Records 201 and 202 were split on seed {test_seed}!"
+
+
+def test_extract_record_windows_metadata(tmp_path: Path) -> None:
+    """Test extract_record_windows returns exact metadata and lead name."""
+    rec_name = "test_meta"
+    rec_path = str(tmp_path / rec_name)
+    fs = 360.0
+    n_samples = 1000
+    t = np.arange(n_samples) / fs
+    p_signal = np.column_stack([np.sin(2 * np.pi * 1.0 * t), np.cos(2 * np.pi * 1.0 * t)])
+    wfdb.wrsamp(rec_name, fs=int(fs), units=["mV", "mV"], sig_name=["MLII", "V5"], p_signal=p_signal, write_dir=str(tmp_path))
+    wfdb.wrann(rec_name, "atr", sample=np.array([100], dtype=np.int32), symbol=["N"], write_dir=str(tmp_path))
+
+    dsp_filter = DSPFilter(sample_rate=fs)
+    x, y, starts, ends, lead = extract_record_windows(rec_path, dsp_filter, return_metadata=True)
+    assert len(x) == len(starts) == len(ends) == 9
+    assert starts[0] == 0 and ends[0] == 200
+    assert starts[1] == 100 and ends[1] == 300
+    assert lead == "MLII"
+

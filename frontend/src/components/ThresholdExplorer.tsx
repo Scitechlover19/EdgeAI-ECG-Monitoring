@@ -62,16 +62,6 @@ export default function ThresholdExplorer() {
             <div className="flex items-center gap-2 text-xs font-numeric">
               <span className="text-steel text-[11px]">Compare:</span>
               <button
-                onClick={() => setThreshold(0.35)}
-                className={`px-2 py-0.5 rounded border text-[11px] transition-colors cursor-pointer ${
-                  threshold === 0.35
-                    ? "bg-signal text-surface border-signal font-semibold"
-                    : "bg-surface text-ink border-steel/25 hover:border-steel/50"
-                }`}
-              >
-                τ = 0.35 (Deployed)
-              </button>
-              <button
                 onClick={() => setThreshold(0.5)}
                 className={`px-2 py-0.5 rounded border text-[11px] transition-colors cursor-pointer ${
                   threshold === 0.5
@@ -79,7 +69,17 @@ export default function ThresholdExplorer() {
                     : "bg-surface text-ink border-steel/25 hover:border-steel/50"
                 }`}
               >
-                τ = 0.50 (Standard)
+                τ* = 0.52 (Dual-Branch Primary)
+              </button>
+              <button
+                onClick={() => setThreshold(0.35)}
+                className={`px-2 py-0.5 rounded border text-[11px] transition-colors cursor-pointer ${
+                  threshold === 0.35
+                    ? "bg-steel text-surface border-steel font-semibold"
+                    : "bg-surface text-ink border-steel/25 hover:border-steel/50"
+                }`}
+              >
+                τ = 0.35 (Stage 0 Baseline)
               </button>
               <button
                 onClick={() => setThreshold(0.85)}
@@ -89,7 +89,7 @@ export default function ThresholdExplorer() {
                     : "bg-surface text-ink border-steel/25 hover:border-steel/50"
                 }`}
               >
-                τ = 0.85 (Old Baseline)
+                τ = 0.85 (Old Starvation Point)
               </button>
             </div>
           </div>
@@ -172,14 +172,25 @@ export default function ThresholdExplorer() {
 
           {/* Contextual Insight Callout */}
           <div className="p-4 rounded-sm bg-surface-recessed border border-steel/15 text-xs text-ink/80 leading-relaxed">
-            {threshold === 0.35 && modelType === "no_kd_int8" && (
+            {threshold === 0.5 && (
               <div className="flex items-start gap-2.5">
                 <CheckCircle2 className="h-4 w-4 text-signal shrink-0 mt-0.5" />
                 <div>
-                  <strong className="text-ink">Selected Operating Point (Decision #15):</strong> At τ = 0.35, the No-KD
-                  INT8 model achieves <strong>13.79% recall</strong> (a 20.5× gain over 0.85) while keeping precision at{" "}
-                  <strong>66.45%</strong> and false alarms to <strong>126.4 FP/hr</strong>, saving{" "}
-                  <strong>99.04%</strong> of network bandwidth.
+                  <strong className="text-ink">Primary Deployed Operating Point (Stage 2 & 3 Locked):</strong> At τ* = 0.52,
+                  the Dual-Branch INT8 TinyML model achieves <strong>79.28% sensitivity on MIT-BIH</strong> (1,056/1,332 beats)
+                  and <strong>86.43% sensitivity</strong> (91.34% VEB recall) on external patients (SVDB + INCART), while
+                  keeping false alarms to just <strong>5.24 to 11.71 ep/hr</strong>.
+                </div>
+              </div>
+            )}
+
+            {threshold === 0.35 && modelType === "no_kd_int8" && (
+              <div className="flex items-start gap-2.5">
+                <CheckCircle2 className="h-4 w-4 text-steel shrink-0 mt-0.5" />
+                <div>
+                  <strong className="text-ink">Stage 0 Baseline Operating Point:</strong> At τ = 0.35, the legacy sliding-window
+                  No-KD model achieved 13.79% window recall and 126.4 FP/hr false alarms. Fusing causal RR context in Stage 2
+                  subsequently resolved this sensitivity bottleneck (advancing recall from 13.79% to 79.28%).
                 </div>
               </div>
             )}
@@ -188,7 +199,7 @@ export default function ThresholdExplorer() {
               <div className="flex items-start gap-2.5">
                 <AlertTriangle className="h-4 w-4 text-alert shrink-0 mt-0.5" />
                 <div>
-                  <strong className="text-alert">Sensitivity Starvation Failure:</strong> At τ = 0.85, the model
+                  <strong className="text-alert">Sensitivity Starvation Failure:</strong> At τ = 0.85, the legacy model
                   triggered only 137 times, detecting just 49 anomalies (<strong>0.67% recall</strong>). While bandwidth
                   reduction was 99.91%, 99.33% of arrhythmias were missed entirely.
                 </div>
@@ -207,7 +218,7 @@ export default function ThresholdExplorer() {
               </div>
             )}
 
-            {threshold !== 0.35 && threshold !== 0.85 && modelType === "no_kd_int8" && (
+            {threshold !== 0.35 && threshold !== 0.5 && threshold !== 0.85 && modelType === "no_kd_int8" && (
               <div className="flex items-start gap-2.5">
                 <Radio className="h-4 w-4 text-steel shrink-0 mt-0.5" />
                 <div>
