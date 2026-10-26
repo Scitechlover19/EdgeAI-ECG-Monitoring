@@ -35,11 +35,11 @@ firmware/
 | Metric | Target Specification | Measured / Simulated In Firmware |
 | :--- | :--- | :--- |
 | **CPU Architecture** | ARM Cortex-M4 | ARM Cortex-M4 (`cortex_m4_ecg.repl`) |
-| **SRAM Ceiling** | $\le 256\text{ KB}$ | $\approx 15.16\text{ KB}$ arena ($\approx 5.9\%$ utilization) `[SIMULATED]` |
-| **Flash Ceiling** | $\le 1\text{ MB}$ (1024 KB) | $11,224\text{ bytes}$ ($10.96\text{ KB}$, $1.07\%$ utilization) `[MEASURED]` |
+| **SRAM Ceiling** | $\le 256\text{ KB}$ | $\approx 5.40\text{ KB}$ required arena ($2.11\%$ utilization) `[MEASURED]` |
+| **Flash Ceiling** | $\le 1\text{ MB}$ (1024 KB) | $13,216\text{ bytes}$ ($12.91\text{ KB}$, $1.26\%$ utilization) `[MEASURED]` |
 | **Sampling Frequency** | $360\text{ Hz}$ | $360\text{ Hz}$ window buffer (200 samples) |
 | **DSP Filtering** | $0.5 - 45.0\text{ Hz}$ Bandpass | Cascaded Direct-Form II Biquad Stages |
-| **State Machine** | SLEEP $\leftrightarrow$ ACTIVE | Two-state hysteresis scheduler (threshold $\tau = 0.35$) |
+| **State Machine** | SLEEP $\leftrightarrow$ ACTIVE | Two-state hysteresis scheduler (threshold $\tau^* = 0.52$) |
 | **Privacy Guarantee** | Zero raw ECG transmitted | Discrete metadata payload: `{ts, anomaly_id, conf, bpm, auth}` |
 
 ---

@@ -167,7 +167,7 @@ export default function Hero() {
             Zero Raw Waveform Transmission
           </span>
           <span className="inline-flex items-center gap-1.5 rounded bg-surface px-2.5 py-1 border border-steel/20 font-numeric">
-            MIT-BIH + SVDB + INCART Validated
+            Dual-Branch INT8 TinyML
           </span>
         </div>
 
@@ -178,8 +178,8 @@ export default function Hero() {
           </h1>
           <p className="text-lg md:text-xl text-ink/75 leading-relaxed">
             An edge-AI cardiac monitoring pipeline that filters 99% of normal rhythms directly on-device,
-            waking its radio transceiver only when verified arrhythmias occur — achieving 79.28% sensitivity on
-            MIT-BIH and 86.43% on external cohorts while preserving 99.04% wireless bandwidth.
+            waking its radio transceiver only when verified arrhythmias occur — achieving 79.28% sensitivity
+            while saving 99.04% of wireless transmission power.
           </p>
           <div className="mt-8 flex flex-wrap items-center gap-4">
             <a

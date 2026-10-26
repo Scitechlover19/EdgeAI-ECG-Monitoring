@@ -24,6 +24,8 @@ echo "=========================================================="
 echo " EdgeAI ECG Firmware Loaded into Cortex-M4 Emulated MCU   "
 echo " SRAM: 256 KB | Flash: 1 MB | Clock: Real-Time Virtual    "
 echo " Model: Quantized INT8 Dual-Branch (13,216 B / 1,698 params)"
+echo " Scheduler Threshold: \tau* = 0.52 (F1-Optimal)              "
+echo " Recovery Lockout   : 5 consecutive normal beats          "
 echo " Starting execution...                                    "
 echo "=========================================================="
 
