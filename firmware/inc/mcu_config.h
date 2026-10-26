@@ -32,7 +32,7 @@ extern "C" {
 #define DSP_FILTER_ORDER          4
 
 /* State Scheduler & Thresholds */
-#define SCHEDULER_THRESHOLD       0.35f /* Anomaly trigger threshold */
+#define SCHEDULER_THRESHOLD       0.52f /* Anomaly trigger threshold (Dual-Branch F1-Optimal) */
 #define SCHEDULER_RECOVERY_BEATS  5     /* Consecutive normal beats to return to SLEEP */
 
 /* System Power States */

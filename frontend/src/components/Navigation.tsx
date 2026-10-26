@@ -18,7 +18,7 @@ export default function Navigation() {
           </span>
           <span className="hidden sm:inline-flex items-center gap-1 rounded px-2 py-0.5 text-xs text-steel bg-surface border border-steel/15 font-numeric">
             <ShieldCheck className="h-3 w-3 text-signal" />
-            Decision #15 Deployed
+            Stage 2 &amp; 3 Validated · Dual-Branch INT8
           </span>
         </Link>
 

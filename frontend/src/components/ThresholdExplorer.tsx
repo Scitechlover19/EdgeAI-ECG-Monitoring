@@ -5,13 +5,38 @@ import sweepData from "@/data/threshold-sweep.json";
 import { Sliders, AlertTriangle, CheckCircle2, TrendingUp, Radio } from "lucide-react";
 
 export default function ThresholdExplorer() {
-  const [modelType, setModelType] = useState<"no_kd_int8" | "kd_int8">("no_kd_int8");
-  const [threshold, setThreshold] = useState<number>(0.35);
+  const [modelType, setModelType] = useState<"dual_branch_int8" | "no_kd_int8" | "kd_int8">("dual_branch_int8");
+  const [threshold, setThreshold] = useState<number>(0.52);
 
-  const activeDataset = modelType === "no_kd_int8" ? sweepData.no_kd_int8 : sweepData.kd_int8;
-  const currentPoint = activeDataset.find((pt) => Math.abs(pt.threshold - threshold) < 0.001) || activeDataset[1];
+  const getDataset = () => {
+    if (modelType === "dual_branch_int8") return sweepData.dual_branch_int8;
+    if (modelType === "kd_int8") return sweepData.kd_int8;
+    return sweepData.no_kd_int8;
+  };
+
+  const activeDataset = getDataset();
+  const currentPoint =
+    activeDataset.find((pt) => Math.abs(pt.threshold - threshold) < 0.015) ||
+    activeDataset.find((pt) => Math.abs(pt.threshold - 0.52) < 0.015) ||
+    activeDataset[0];
 
   const availableThresholds = activeDataset.map((pt) => pt.threshold);
+  const minThreshold = availableThresholds[0] ?? 0.3;
+  const maxThreshold = availableThresholds[availableThresholds.length - 1] ?? 0.85;
+
+  const handleSliderChange = (val: number) => {
+    // Snap to closest available threshold in active dataset
+    let closest = availableThresholds[0];
+    let minDiff = Math.abs(val - closest);
+    for (const t of availableThresholds) {
+      const diff = Math.abs(val - t);
+      if (diff < minDiff) {
+        minDiff = diff;
+        closest = t;
+      }
+    }
+    setThreshold(closest);
+  };
 
   return (
     <section id="threshold" className="py-20 border-b border-steel/15 bg-surface/40">
@@ -24,7 +49,8 @@ export default function ThresholdExplorer() {
           </h2>
           <p className="text-base sm:text-lg text-ink/75 leading-relaxed">
             In IoMT edge monitoring, the decision threshold (τ) governs the tension between clinical sensitivity,
-            physician alert fatigue, and battery radio lifetime. Drag the slider to inspect the actual measured data.
+            physician alert fatigue, and battery radio lifetime. Drag the slider to inspect empirical results across
+            each model candidate.
           </p>
         </div>
 
@@ -36,60 +62,100 @@ export default function ThresholdExplorer() {
               <span className="text-steel">Evaluated Architecture:</span>
               <div className="inline-flex rounded-sm border border-steel/20 bg-surface-recessed p-0.5">
                 <button
-                  onClick={() => setModelType("no_kd_int8")}
+                  onClick={() => {
+                    setModelType("dual_branch_int8");
+                    setThreshold(0.52);
+                  }}
+                  className={`px-3 py-1 rounded-sm text-xs transition-all cursor-pointer ${
+                    modelType === "dual_branch_int8"
+                      ? "bg-surface text-signal font-semibold shadow-xs"
+                      : "text-steel hover:text-ink"
+                  }`}
+                >
+                  Dual-Branch INT8 (Deployed)
+                </button>
+                <button
+                  onClick={() => {
+                    setModelType("no_kd_int8");
+                    setThreshold(0.35);
+                  }}
                   className={`px-3 py-1 rounded-sm text-xs transition-all cursor-pointer ${
                     modelType === "no_kd_int8"
                       ? "bg-surface text-ink font-semibold shadow-xs"
                       : "text-steel hover:text-ink"
                   }`}
                 >
-                  Deployed No-KD INT8
+                  Baseline No-KD (Stage 0)
                 </button>
                 <button
-                  onClick={() => setModelType("kd_int8")}
+                  onClick={() => {
+                    setModelType("kd_int8");
+                    setThreshold(0.5);
+                  }}
                   className={`px-3 py-1 rounded-sm text-xs transition-all cursor-pointer ${
                     modelType === "kd_int8"
                       ? "bg-surface text-alert font-semibold shadow-xs"
                       : "text-steel hover:text-ink"
                   }`}
                 >
-                  KD INT8 (Rejected Candidate)
+                  KD INT8 (Rejected)
                 </button>
               </div>
             </div>
 
             {/* Quick Jumps */}
             <div className="flex items-center gap-2 text-xs font-numeric">
-              <span className="text-steel text-[11px]">Compare:</span>
+              <span className="text-steel text-[11px]">Quick Jump:</span>
               <button
-                onClick={() => setThreshold(0.5)}
+                onClick={() => {
+                  setModelType("dual_branch_int8");
+                  setThreshold(0.52);
+                }}
                 className={`px-2 py-0.5 rounded border text-[11px] transition-colors cursor-pointer ${
-                  threshold === 0.5
+                  modelType === "dual_branch_int8" && Math.abs(threshold - 0.52) < 0.01
                     ? "bg-signal text-surface border-signal font-semibold"
                     : "bg-surface text-ink border-steel/25 hover:border-steel/50"
                 }`}
               >
-                τ* = 0.52 (Dual-Branch Primary)
+                τ* = 0.52 (Dual-Branch F1-Opt)
               </button>
               <button
-                onClick={() => setThreshold(0.35)}
+                onClick={() => {
+                  setModelType("dual_branch_int8");
+                  setThreshold(0.48);
+                }}
                 className={`px-2 py-0.5 rounded border text-[11px] transition-colors cursor-pointer ${
-                  threshold === 0.35
+                  modelType === "dual_branch_int8" && Math.abs(threshold - 0.48) < 0.01
+                    ? "bg-signal text-surface border-signal font-semibold"
+                    : "bg-surface text-ink border-steel/25 hover:border-steel/50"
+                }`}
+              >
+                τ = 0.48 (F2-Opt: 82.36%)
+              </button>
+              <button
+                onClick={() => {
+                  setModelType("no_kd_int8");
+                  setThreshold(0.35);
+                }}
+                className={`px-2 py-0.5 rounded border text-[11px] transition-colors cursor-pointer ${
+                  modelType === "no_kd_int8" && Math.abs(threshold - 0.35) < 0.01
                     ? "bg-steel text-surface border-steel font-semibold"
                     : "bg-surface text-ink border-steel/25 hover:border-steel/50"
                 }`}
               >
-                τ = 0.35 (Stage 0 Baseline)
+                τ = 0.35 (Stage 0: 13.79%)
               </button>
               <button
-                onClick={() => setThreshold(0.85)}
+                onClick={() => {
+                  setThreshold(0.85);
+                }}
                 className={`px-2 py-0.5 rounded border text-[11px] transition-colors cursor-pointer ${
-                  threshold === 0.85
+                  Math.abs(threshold - 0.85) < 0.01
                     ? "bg-alert text-surface border-alert font-semibold"
                     : "bg-surface text-ink border-steel/25 hover:border-steel/50"
                 }`}
               >
-                τ = 0.85 (Old Starvation Point)
+                τ = 0.85 (Starvation)
               </button>
             </div>
           </div>
@@ -109,30 +175,30 @@ export default function ThresholdExplorer() {
             <input
               id="threshold-slider"
               type="range"
-              min={0.3}
-              max={0.95}
-              step={0.05}
+              min={minThreshold}
+              max={maxThreshold}
+              step={0.01}
               value={threshold}
-              onChange={(e) => setThreshold(parseFloat(e.target.value))}
+              onChange={(e) => handleSliderChange(parseFloat(e.target.value))}
               className="w-full h-2 bg-surface-recessed rounded-lg appearance-none cursor-pointer accent-signal"
             />
 
             <div className="flex justify-between text-[11px] font-numeric text-steel mt-2">
-              <span>0.30 (Sensitive)</span>
-              <span className={threshold === 0.35 ? "text-signal font-bold" : ""}>0.35 (Deployed)</span>
-              <span>0.50</span>
-              <span className={threshold === 0.85 ? "text-alert font-bold" : ""}>0.85 (Old Baseline)</span>
-              <span>0.95 (Conservative)</span>
+              <span>{minThreshold.toFixed(2)} (Sensitive)</span>
+              <span className={Math.abs(threshold - 0.48) < 0.01 ? "text-signal font-bold" : ""}>0.48 (F2-Opt)</span>
+              <span className={Math.abs(threshold - 0.52) < 0.01 ? "text-signal font-bold" : ""}>0.52 (Deployed F1-Opt)</span>
+              <span className={Math.abs(threshold - 0.85) < 0.01 ? "text-alert font-bold" : ""}>0.85 (Starvation)</span>
             </div>
           </div>
 
           {/* Dynamic Live Metric Readouts Grid */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
             <div className="p-4 rounded-sm border border-steel/15 bg-surface-recessed/50 font-numeric">
-              <span className="text-xs text-steel block mb-1">Anomaly Recall</span>
+              <span className="text-xs text-steel block mb-1">Anomaly Sensitivity (Recall)</span>
               <div className="text-2xl font-semibold text-ink">{currentPoint.recall_percent.toFixed(2)}%</div>
               <span className="text-[11px] text-steel mt-1 block">
-                {currentPoint.tp.toLocaleString()} of 7,278 anomalies
+                {currentPoint.tp.toLocaleString()} of{" "}
+                {modelType === "dual_branch_int8" ? "1,332 reference beats" : "7,278 anomalies"}
               </span>
             </div>
 
@@ -140,22 +206,24 @@ export default function ThresholdExplorer() {
               <span className="text-xs text-steel block mb-1">Precision (PPV)</span>
               <div className="text-2xl font-semibold text-ink">{currentPoint.precision_percent.toFixed(2)}%</div>
               <span className="text-[11px] text-steel mt-1 block">
-                {currentPoint.fp.toLocaleString()} false alarms
+                {currentPoint.fp.toLocaleString()} false alerts
               </span>
             </div>
 
             <div className="p-4 rounded-sm border border-steel/15 bg-surface-recessed/50 font-numeric">
-              <span className="text-xs text-steel block mb-1">False Alarm Rate</span>
+              <span className="text-xs text-steel block mb-1">Clinical False Alarm Rate</span>
               <div
                 className={`text-2xl font-semibold ${
-                  currentPoint.false_alarms_per_hour > 300 ? "text-alert" : "text-ink"
+                  currentPoint.false_alarms_per_hour > 150 ? "text-alert" : "text-ink"
                 }`}
               >
                 {currentPoint.false_alarms_per_hour.toFixed(1)}{" "}
-                <span className="text-xs font-normal text-steel">FP/hr</span>
+                <span className="text-xs font-normal text-steel">ep/hr</span>
               </div>
               <span className="text-[11px] text-steel mt-1 block">
-                ~{(currentPoint.false_alarms_per_hour / 60).toFixed(1)} false alerts / min
+                {modelType === "dual_branch_int8"
+                  ? `${(currentPoint as any).false_alarm_episodes ?? 21} false episodes (5-beat lockout)`
+                  : `~${(currentPoint.false_alarms_per_hour / 60).toFixed(1)} alerts / min`}
               </span>
             </div>
 
@@ -165,42 +233,52 @@ export default function ThresholdExplorer() {
                 {currentPoint.bandwidth_reduction_percent.toFixed(2)}%
               </div>
               <span className="text-[11px] text-steel mt-1 block">
-                {currentPoint.bytes_transmitted.toLocaleString()} bytes transmitted
+                {currentPoint.bytes_transmitted.toLocaleString()} B ({currentPoint.active_alerts.toLocaleString()} alerts)
               </span>
             </div>
           </div>
 
           {/* Contextual Insight Callout */}
           <div className="p-4 rounded-sm bg-surface-recessed border border-steel/15 text-xs text-ink/80 leading-relaxed">
-            {threshold === 0.5 && (
+            {modelType === "dual_branch_int8" && Math.abs(threshold - 0.52) < 0.015 && (
               <div className="flex items-start gap-2.5">
                 <CheckCircle2 className="h-4 w-4 text-signal shrink-0 mt-0.5" />
                 <div>
-                  <strong className="text-ink">Primary Deployed Operating Point (Stage 2 & 3 Locked):</strong> At τ* = 0.52,
+                  <strong className="text-ink">Primary Deployed Operating Point (Stage 2 &amp; 3 Locked):</strong> At τ* = 0.52,
                   the Dual-Branch INT8 TinyML model achieves <strong>79.28% sensitivity on MIT-BIH</strong> (1,056/1,332 beats)
                   and <strong>86.43% sensitivity</strong> (91.34% VEB recall) on external patients (SVDB + INCART), while
-                  keeping false alarms to just <strong>5.24 to 11.71 ep/hr</strong>.
+                  keeping clinical false alarm burden to just <strong>5.24 ep/hr on MIT-BIH</strong> and <strong>11.71 ep/hr on external patients</strong> (&gt;12x below the 150 ep/hr fatigue ceiling).
                 </div>
               </div>
             )}
 
-            {threshold === 0.35 && modelType === "no_kd_int8" && (
+            {modelType === "dual_branch_int8" && Math.abs(threshold - 0.48) < 0.015 && (
+              <div className="flex items-start gap-2.5">
+                <CheckCircle2 className="h-4 w-4 text-signal shrink-0 mt-0.5" />
+                <div>
+                  <strong className="text-ink">F2-Optimal High-Sensitivity Operating Point:</strong> At τ = 0.48,
+                  beat sensitivity rises to <strong>82.36%</strong> (1,097 / 1,332 beats) with <strong>88.78% VEB recall</strong> (957 / 1,078 ventricular beats) and <strong>6.48 false alarm episodes/hr</strong>, providing maximum recall for high-risk cardiac screening.
+                </div>
+              </div>
+            )}
+
+            {modelType === "no_kd_int8" && Math.abs(threshold - 0.35) < 0.015 && (
               <div className="flex items-start gap-2.5">
                 <CheckCircle2 className="h-4 w-4 text-steel shrink-0 mt-0.5" />
                 <div>
                   <strong className="text-ink">Stage 0 Baseline Operating Point:</strong> At τ = 0.35, the legacy sliding-window
                   No-KD model achieved 13.79% window recall and 126.4 FP/hr false alarms. Fusing causal RR context in Stage 2
-                  subsequently resolved this sensitivity bottleneck (advancing recall from 13.79% to 79.28%).
+                  subsequently resolved this sensitivity bottleneck, advancing recall from <strong>13.79% to 79.28%</strong> on MIT-BIH and <strong>86.43%</strong> externally.
                 </div>
               </div>
             )}
 
-            {threshold === 0.85 && (
+            {Math.abs(threshold - 0.85) < 0.015 && (
               <div className="flex items-start gap-2.5">
                 <AlertTriangle className="h-4 w-4 text-alert shrink-0 mt-0.5" />
                 <div>
-                  <strong className="text-alert">Sensitivity Starvation Failure:</strong> At τ = 0.85, the legacy model
-                  triggered only 137 times, detecting just 49 anomalies (<strong>0.67% recall</strong>). While bandwidth
+                  <strong className="text-alert">Sensitivity Starvation Failure:</strong> At τ = 0.85, the legacy sliding-window
+                  model triggered only 137 times, detecting just 49 anomalies (<strong>0.67% recall</strong>). While bandwidth
                   reduction was 99.91%, 99.33% of arrhythmias were missed entirely.
                 </div>
               </div>
@@ -218,17 +296,17 @@ export default function ThresholdExplorer() {
               </div>
             )}
 
-            {threshold !== 0.35 && threshold !== 0.5 && threshold !== 0.85 && modelType === "no_kd_int8" && (
-              <div className="flex items-start gap-2.5">
-                <Radio className="h-4 w-4 text-steel shrink-0 mt-0.5" />
-                <div>
-                  At threshold τ = {threshold.toFixed(2)}, the pipeline triggers {currentPoint.active_alerts} times (
-                  {currentPoint.active_alerts_percent.toFixed(2)}% duty cycle) across the 51,992 test windows. Network
-                  payload reduction remains {currentPoint.bandwidth_reduction_percent.toFixed(2)}%, well above the 90.0%
-                  NFR-6 target.
+            {modelType === "dual_branch_int8" &&
+              Math.abs(threshold - 0.52) >= 0.015 &&
+              Math.abs(threshold - 0.48) >= 0.015 &&
+              Math.abs(threshold - 0.85) >= 0.015 && (
+                <div className="flex items-start gap-2.5">
+                  <Radio className="h-4 w-4 text-steel shrink-0 mt-0.5" />
+                  <div>
+                    At threshold τ = {threshold.toFixed(2)}, the Dual-Branch TinyML model achieves {currentPoint.recall_percent.toFixed(2)}% sensitivity ({currentPoint.tp} target beats detected) and {currentPoint.precision_percent.toFixed(2)}% precision, emitting {currentPoint.active_alerts} alerts ({currentPoint.active_alerts_percent.toFixed(2)}% transmission rate). False alarm burden is {currentPoint.false_alarms_per_hour.toFixed(1)} episodes/hr under 5-beat recovery hysteresis.
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
           </div>
         </div>
       </div>

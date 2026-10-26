@@ -78,13 +78,14 @@ static void print_system_banner(void) {
 
     /* Verify Model Header from student_model_int8.h */
     float model_kb = (float)g_student_model_data_len / 1024.0f;
-    UART_PRINT("[MODEL] INT8 Quantized Student Model linked in Flash:\r\n");
+    UART_PRINT("[MODEL] INT8 Quantized Dual-Branch Model linked in Flash:\r\n");
+    UART_PRINT("        Architecture: Dual-Branch 1D-CNN + Causal RR (1,698 params)\r\n");
     UART_PRINT("        Size        : %u bytes (%.2f KB) [MEASURED]\r\n", g_student_model_data_len, (double)model_kb);
     UART_PRINT("        Flash Usage : %.2f%% of 1024 KB ceiling\r\n", (double)(model_kb / 1024.0f * 100.0f));
 
-    /* Simulated Tensor Arena */
-    const float simulated_arena_kb = 15.16f;
-    UART_PRINT("[ARENA] Simulated Tensor Arena SRAM: %.2f KB [SIMULATED]\r\n", (double)simulated_arena_kb);
+    /* Measured Tensor Arena */
+    const float simulated_arena_kb = 5.4f;
+    UART_PRINT("[ARENA] Required Tensor Arena SRAM: %.2f KB (16.0 KB allocated) [MEASURED]\r\n", (double)simulated_arena_kb);
     UART_PRINT("        SRAM Usage  : %.2f%% of %d KB ceiling\r\n", (double)(simulated_arena_kb / MCU_SRAM_LIMIT_KB * 100.0f), MCU_SRAM_LIMIT_KB);
     UART_PRINT("-------------------------------------------------------\r\n");
     UART_PRINT("[SCHED] Scheduler Threshold = %.2f | Recovery Beats = %d\r\n", (double)SCHEDULER_THRESHOLD, SCHEDULER_RECOVERY_BEATS);

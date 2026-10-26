@@ -23,7 +23,7 @@ sysbus LoadELF $bin
 echo "=========================================================="
 echo " EdgeAI ECG Firmware Loaded into Cortex-M4 Emulated MCU   "
 echo " SRAM: 256 KB | Flash: 1 MB | Clock: Real-Time Virtual    "
-echo " Model: Quantized INT8 Student Model (student_model_int8) "
+echo " Model: Quantized INT8 Dual-Branch (13,216 B / 1,698 params)"
 echo " Starting execution...                                    "
 echo "=========================================================="
 

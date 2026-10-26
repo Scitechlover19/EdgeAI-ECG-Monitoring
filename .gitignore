@@ -70,3 +70,26 @@ frontend/.env*.local
 frontend/npm-debug.log*
 frontend/yarn-debug.log*
 frontend/yarn-error.log*
+
+# Capstone review documentation, presentations, and temporary files
+CAPSTONE PROJECT FINAL REVIEW DOC/
+scripts/report_builder/
+report_builder/
+slide_renders/
+reports/extracted_final_media/
+reports/state_machine_diagram.png
+docs/screenshots/backup_review1/
+EdgeAI_ECG_Monitoring_Master_Presentation.pptx
+PROJECT_DIARY_SWE3004_22MIS0027.docx
+test_bullet.docx
+test_bullet_compare.docx
+test_bullet_out.docx
+test_cell_bullet.docx
+test_tight_bullet.docx
+*.docx
+*.pptx
+
+# Scripts created specifically to generate reports, presentations, and documentation
+scripts/
+
+

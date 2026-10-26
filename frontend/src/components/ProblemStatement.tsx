@@ -125,8 +125,8 @@ export default function ProblemStatement() {
                   </span>
                 </div>
                 <p className="text-xs text-ink/70 mb-4">
-                  Normal sinus rhythm (50,481 windows) is filtered locally. The radio powers awake only for 1,511 anomaly
-                  events, sending encrypted metadata.
+                  Normal sinus rhythm is filtered locally on-chip. The radio powers awake only for verified arrhythmia
+                  events (1,688 alert packets out of 17,729 beats; 99.04% bandwidth reduction), sending encrypted metadata.
                 </p>
 
                 {/* Inline SVG Diagram */}
@@ -136,14 +136,14 @@ export default function ProblemStatement() {
                       <span className="h-2 w-2 rounded-full bg-signal"></span>
                       On-Chip Inference
                     </span>
-                    <span className="text-[11px] text-signal font-semibold">Radio Dormant 97.1%</span>
+                    <span className="text-[11px] text-signal font-semibold">Radio Dormant &gt;90% (99.04% Data Saved)</span>
                     <span className="flex items-center gap-1.5 font-medium text-ink">
                       <span className="h-2 w-2 rounded-full bg-signal"></span>
                       Secure Sink
                     </span>
                   </div>
                   <div className="w-full bg-surface-recessed h-1.5 rounded-full mt-2 overflow-hidden">
-                    <div className="bg-signal h-full w-[2.91%]"></div>
+                    <div className="bg-signal h-full w-[0.96%]"></div>
                   </div>
                 </div>
               </div>

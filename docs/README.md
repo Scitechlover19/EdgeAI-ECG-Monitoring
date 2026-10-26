@@ -313,4 +313,4 @@ Open [http://localhost:3000](http://localhost:3000) (or the specified port) in y
 
 ---
 
-**Nancy Singh** · M.Tech Capstone Project · Department of Software Engineering, VIT
+**Nancy Singh** · Integrated M.Tech Capstone Project · Department of Software Engineering, VIT

@@ -67,11 +67,11 @@ export default function Footer() {
           <div>
             <span className="font-semibold text-ink text-xs uppercase tracking-wider block mb-3">Committed Reports</span>
             <ul className="space-y-2 font-numeric text-xs text-ink/70">
-              <li>bandwidth_report.md (99.04%)</li>
-              <li>resource_report.md (0.16 ms, 10.96 KB)</li>
-              <li>quantization_report.md (INT8 PTQ)</li>
-              <li>threshold_sweep.md (Table C &amp; D)</li>
-              <li>kd_ablation.md (Hyperparameter sweep)</li>
+              <li>stage2_causal_rr_results.json (79.28% MIT-BIH)</li>
+              <li>stage3_external_validation_results.json (86.43% Ext)</li>
+              <li>bandwidth_report.md (99.04% Saved)</li>
+              <li>resource_report.md (12.91 KB Flash, 5.4 KB SRAM)</li>
+              <li>threshold_sweep.md (τ* = 0.52 Calibrated)</li>
             </ul>
           </div>
         </div>

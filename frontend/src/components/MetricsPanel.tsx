@@ -115,7 +115,9 @@ export default function MetricsPanel() {
               <HardDrive className="h-3.5 w-3.5 text-signal" />
               <span>Model Flash Size</span>
             </div>
-            <div className="text-xl font-semibold text-ink">{budgets.flash.model_kb.toFixed(2)} KB</div>
+            <div className="text-xl font-semibold text-ink">
+              {((budgets.flash as any).model_kib ?? (budgets.flash as any).model_kb ?? 12.91).toFixed(2)} KB
+            </div>
             <div className="text-[11px] text-steel mt-1">
               1,698 params · Total firmware ~82 KB · <span className="text-signal font-medium">98.7% headroom</span>
             </div>
@@ -127,7 +129,9 @@ export default function MetricsPanel() {
               <Cpu className="h-3.5 w-3.5 text-signal" />
               <span>SRAM Tensor Arena</span>
             </div>
-            <div className="text-xl font-semibold text-ink">{budgets.sram.tensor_arena_kb.toFixed(1)} KB</div>
+            <div className="text-xl font-semibold text-ink">
+              {((budgets.sram as any).tensor_arena_required_kib ?? (budgets.sram as any).tensor_arena_kb ?? 5.4).toFixed(1)} KB
+            </div>
             <div className="text-[11px] text-steel mt-1">
               Ceiling: ≤ 256 KB · Reserved: 16 KB · <span className="text-signal font-medium">97.9% headroom</span>
             </div>

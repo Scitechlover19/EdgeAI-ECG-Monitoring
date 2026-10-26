@@ -127,7 +127,7 @@ export default function TechStack() {
               <li className="flex flex-col">
                 <span className="font-semibold text-ink">Zero Biological Waveform Leakage</span>
                 <span className="text-steel">
-                  All 1,511 transmitted telemetry packets audited: 0 raw waveform sample bytes transmitted across the network.
+                  All 1,688 emitted telemetry alert packets audited: 0 raw waveform sample bytes transmitted across the network.
                 </span>
               </li>
             </ul>
